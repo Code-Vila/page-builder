@@ -1,201 +1,289 @@
 <template>
   <div class="editor-container bg-gray-900 text-gray-100">
-    <!-- Barra de ferramentas superior ampliada -->
-    <div class="editor-toolbar bg-gray-800 border-b border-gray-700 p-3">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <h1 class="text-xl font-bold text-white">Construtor de Páginas</h1>
-          <div class="flex items-center space-x-2">
-            <button
-              @click="savePage"
-              :disabled="isSaving"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-            >
-              <svg
-                v-if="isSaving"
-                class="animate-spin h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
+    <!-- Barra de ferramentas superior reorganizada -->
+    <div
+      class="editor-toolbar bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700 shadow-lg"
+    >
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between">
+          <!-- Logo/Título e Ações Principais -->
+          <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
               >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
+                <svg
+                  class="w-5 h-5 text-white"
                   fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span>{{ isSaving ? "Salvando..." : "Salvar" }}</span>
-            </button>
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
+                  />
+                </svg>
+              </div>
+              <h1 class="text-lg font-semibold text-white">Site Builder</h1>
+            </div>
 
-            <button
-              @click="exportHTML"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-            >
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <!-- Grupo: Ações de Arquivo -->
+            <div class="flex items-center bg-gray-750 rounded-lg p-1 space-x-1">
+              <button
+                @click="savePage"
+                :disabled="isSaving"
+                :class="[
+                  'px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium transition-all duration-200',
+                  isSaving
+                    ? 'bg-blue-500 text-white cursor-not-allowed'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-600',
+                ]"
+                :title="isSaving ? 'Salvando...' : 'Salvar projeto (Ctrl+S)'"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <span>Exportar</span>
-            </button>
+                <svg
+                  v-if="isSaving"
+                  class="animate-spin h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <svg
+                  v-else
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                <span class="hidden sm:inline">{{
+                  isSaving ? "Salvando..." : "Salvar"
+                }}</span>
+              </button>
 
-            <button
-              @click="previewPage"
-              class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-            >
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <button
+                @click="exportHTML"
+                class="px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-600 transition-all duration-200"
+                title="Exportar como HTML"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-              <span>Preview</span>
-            </button>
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span class="hidden sm:inline">Exportar</span>
+              </button>
+            </div>
 
-            <!-- Novo botão para visualizar código -->
-            <button
-              @click="toggleCodeViewer"
-              :class="[
-                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
-                showCodeViewer
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
-              ]"
-            >
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <!-- Grupo: Visualização -->
+            <div class="flex items-center bg-gray-750 rounded-lg p-1 space-x-1">
+              <button
+                @click="previewPage"
+                class="px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-600 transition-all duration-200"
+                title="Visualizar página"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                />
-              </svg>
-              <span>Código</span>
-            </button>
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+                <span class="hidden sm:inline">Preview</span>
+              </button>
 
-            <!-- Novo botão para régua/guias -->
-            <button
-              @click="toggleRulers"
-              :class="[
-                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
-                rulersEnabled
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
-              ]"
-            >
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <button
+                @click="togglePreviewMode"
+                :class="[
+                  'px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium transition-all duration-200',
+                  previewMode
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-600',
+                ]"
+                :title="
+                  previewMode ? 'Voltar para edição' : 'Modo visualização'
+                "
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              <span>Réguas</span>
-            </button>
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.636 6.636M9.878 9.878a3 3 0 105.304-.943M20.5 20.5l-9.75-9.75"
+                  />
+                </svg>
+                <span class="hidden sm:inline">{{
+                  previewMode ? "Editar" : "Visualizar"
+                }}</span>
+              </button>
+            </div>
 
-            <!-- Novo botão para modo de visualização -->
-            <button
-              @click="togglePreviewMode"
-              :class="[
-                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
-                previewMode
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
-              ]"
-            >
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <!-- Grupo: Ferramentas de Desenvolvimento -->
+            <div class="flex items-center bg-gray-750 rounded-lg p-1 space-x-1">
+              <button
+                @click="toggleCodeViewer"
+                :class="[
+                  'px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium transition-all duration-200',
+                  showCodeViewer
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-600',
+                ]"
+                title="Visualizar código fonte"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-              <span>{{ previewMode ? "Editar" : "Visualizar" }}</span>
-            </button>
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                  />
+                </svg>
+                <span class="hidden sm:inline">Código</span>
+              </button>
+
+              <button
+                @click="toggleRulers"
+                :class="[
+                  'px-3 py-2 rounded-md flex items-center space-x-2 text-sm font-medium transition-all duration-200',
+                  rulersEnabled
+                    ? 'bg-green-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-600',
+                ]"
+                title="Mostrar/ocultar réguas"
+              >
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                <span class="hidden sm:inline">Réguas</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="flex items-center space-x-3">
-          <select
-            v-model="selectedDevice"
-            @change="changeDevice"
-            class="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="desktop">🖥️ Desktop</option>
-            <option value="tablet">📱 Tablet</option>
-            <option value="mobile">📱 Mobile</option>
-          </select>
+          <!-- Controles de Dispositivo e Configurações -->
+          <div class="flex items-center space-x-3">
+            <!-- Seletor de Dispositivo -->
+            <div class="flex items-center bg-gray-750 rounded-lg p-1">
+              <select
+                v-model="selectedDevice"
+                @change="changeDevice"
+                class="bg-transparent border-none text-white text-sm font-medium px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                title="Selecionar dispositivo"
+              >
+                <option value="desktop" class="bg-gray-800">🖥️ Desktop</option>
+                <option value="tablet" class="bg-gray-800">📱 Tablet</option>
+                <option value="mobile" class="bg-gray-800">📱 Mobile</option>
+              </select>
+            </div>
 
-          <button
-            @click="toggleFullscreen"
-            class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-md transition-colors"
-            title="Tela Cheia"
-          >
-            <svg
-              class="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <!-- Divider -->
+            <div class="w-px h-6 bg-gray-600"></div>
+
+            <!-- Botão Tela Cheia -->
+            <button
+              @click="toggleFullscreen"
+              class="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-600 transition-all duration-200"
+              title="Alternar tela cheia"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-              />
-            </svg>
-          </button>
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                />
+              </svg>
+            </button>
+
+            <!-- Menu de Configurações -->
+            <div class="relative">
+              <button
+                @click="showSettingsMenu = !showSettingsMenu"
+                class="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-600 transition-all duration-200"
+                title="Configurações"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -267,7 +355,7 @@
               data-tab="styles"
               @click="switchRightTab('styles')"
             >
-              Estilos
+              🎨 Estilos
             </button>
             <button
               class="gjs-tab-traits flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-transparent"
@@ -281,8 +369,49 @@
 
         <!-- Conteúdo dos painéis direitos -->
         <div class="gjs-panel-content h-full overflow-y-auto">
-          <!-- Painel de estilos -->
-          <div id="styles-container" class="gjs-styles-container p-3"></div>
+          <!-- Preview/Info do elemento selecionado -->
+          <div class="p-4 border-b border-gray-700">
+            <div v-if="selectedElementInfo" class="text-center">
+              <div class="bg-gray-700 rounded-lg p-3 mb-3">
+                <h4 class="text-white text-sm font-medium mb-2">
+                  🎯 Elemento Selecionado
+                </h4>
+                <div class="text-blue-400 text-sm font-medium">
+                  {{ selectedElementInfo.type }}
+                </div>
+                <div class="text-gray-400 text-xs mt-1">
+                  {{ selectedElementInfo.classes || "Sem classes" }}
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-center py-8 text-gray-400">
+              <svg
+                class="mx-auto h-12 w-12 mb-3 opacity-50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1"
+                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a4 4 0 004-4V5z"
+                />
+              </svg>
+              <p class="text-sm font-medium">Nenhum elemento selecionado</p>
+              <p class="text-xs mt-1">
+                Clique em um elemento no canvas para ver suas propriedades
+              </p>
+            </div>
+          </div>
+
+          <!-- Painel de estilos nativo -->
+          <div
+            id="styles-container"
+            class="gjs-styles-container"
+            style="display: block"
+          ></div>
+
           <!-- Painel de traits -->
           <div
             id="traits-container"
@@ -428,6 +557,8 @@ const selectedDevice = ref("desktop");
 const showCodeViewer = ref(false);
 const rulersEnabled = ref(false);
 const previewMode = ref(false);
+const showSettingsMenu = ref(false);
+const selectedElementInfo = ref<{ type: string; classes: string } | null>(null);
 const generatedHTML = ref("");
 const generatedCSS = ref("");
 const generatedJS = ref("");
@@ -532,6 +663,11 @@ const editorConfig = {
     appendTo: "#layers-container",
   },
 
+  // Configuração do gerenciador de seletores (classes CSS)
+  selectorManager: {
+    appendTo: "#styles-container",
+  },
+
   // Configuração do gerenciador de traits
   traitManager: {
     appendTo: "#traits-container",
@@ -577,19 +713,19 @@ const editorConfig = {
 
   // Configurações para melhor experiência
   showOffsets: true,
-  showDevices: true,
+  showDevices: false, // Desabilitar exibição automática de dispositivos
+
+  // Desabilitar painéis automáticos
+  panels: {
+    defaults: [],
+  },
+
+  // Configurações adicionais para evitar painéis automáticos
+  noticeOnUnload: false,
+  clearOnRender: true,
 };
 
 // Novos métodos
-const toggleCodeViewer = () => {
-  showCodeViewer.value = !showCodeViewer.value;
-  if (showCodeViewer.value && editor.value) {
-    generatedHTML.value = editor.value.getHtml();
-    generatedCSS.value = editor.value.getCss();
-    generatedJS.value = editor.value.getJs();
-  }
-};
-
 const toggleRulers = () => {
   rulersEnabled.value = !rulersEnabled.value;
   // Por enquanto, apenas alterna o estado visual
@@ -601,6 +737,15 @@ const togglePreviewMode = () => {
   previewMode.value = !previewMode.value;
   // Por enquanto, apenas alterna o estado visual
   // A implementação completa do preview mode pode ser adicionada depois
+};
+
+const toggleCodeViewer = () => {
+  showCodeViewer.value = !showCodeViewer.value;
+  if (showCodeViewer.value && editor.value) {
+    generatedHTML.value = editor.value.getHtml();
+    generatedCSS.value = editor.value.getCss();
+    generatedJS.value = editor.value.getJs();
+  }
 };
 
 const copyCode = (type: string) => {
@@ -839,6 +984,33 @@ onMounted(() => {
     // Configurar editor personalizado com blocos e componentes
     setupGrapesEditor(editor.value);
 
+    // Forçar remoção de painéis automáticos após inicialização
+    setTimeout(() => {
+      // Remover painéis automáticos do DOM
+      const viewsPanel = document.querySelector(
+        ".gjs-pn-panel.gjs-pn-views-container"
+      );
+      const devicesPanel = document.querySelector(
+        ".gjs-pn-panel.gjs-pn-devices-c"
+      );
+      const commandsPanel = document.querySelector(".gjs-pn-commands");
+      const optionsPanel = document.querySelector(".gjs-pn-options");
+
+      if (viewsPanel) viewsPanel.remove();
+      if (devicesPanel) devicesPanel.remove();
+      if (commandsPanel) commandsPanel.remove();
+      if (optionsPanel) optionsPanel.remove();
+
+      // Remover painéis específicos do Style Manager e Selector Manager
+      const smContainers = document.querySelectorAll(".gjs-sm-container");
+      const clmContainers = document.querySelectorAll(".gjs-clm-container");
+
+      smContainers.forEach((container) => container.remove());
+      clmContainers.forEach((container) => container.remove());
+
+      console.log("🧹 Painéis automáticos do GrapesJS removidos");
+    }, 100);
+
     // Adicionar comandos personalizados
     editor.value.Commands.add("toggle-rulers", {
       run: () => {
@@ -894,8 +1066,32 @@ onMounted(() => {
       console.log("Componente adicionado:", component);
     });
 
+    // Controlar placeholder do Style Manager (removido)
+    editor.value.on("component:selected", (component: any) => {
+      // Capturar informações do elemento selecionado
+      if (component) {
+        selectedElementInfo.value = {
+          type: component.get("tagName") || "div",
+          classes: component.getClasses().join(" "),
+        };
+      }
+    });
+
+    editor.value.on("component:deselected", () => {
+      // Limpar informações do elemento
+      selectedElementInfo.value = null;
+    });
+
     // Adicionar hotkeys
     document.addEventListener("keydown", (e) => {
+      // Esc para fechar modais
+      if (e.key === "Escape") {
+        if (showCodeViewer.value) {
+          toggleCodeViewer();
+        }
+        return;
+      }
+
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
           case "s":
@@ -1026,11 +1222,49 @@ code {
   background: #111827 !important;
 }
 
+/* Forçar o canvas a ocupar toda a área disponível */
+:deep(.gjs-cv-canvas) {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.gjs-cv-canvas-c) {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.gjs-frame-wrapper) {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+}
+
 :deep(.gjs-frame) {
   border: 2px solid #374151 !important;
   border-radius: 12px !important;
   background: white !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  max-width: calc(100% - 40px) !important;
+  width: calc(100% - 40px) !important;
+  height: calc(100% - 40px) !important;
+  min-height: 500px !important;
+}
+
+/* Remover qualquer margem ou padding extra do GrapesJS */
+:deep(#gjs) {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 :deep(.gjs-sm-sector) {
@@ -1069,5 +1303,212 @@ code {
     ),
     linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+
+/* Estilos customizados para a nova toolbar */
+.bg-gray-750 {
+  background-color: #374151;
+}
+
+.editor-toolbar {
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+}
+
+.editor-toolbar button {
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-toolbar button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.editor-toolbar button:hover::before {
+  left: 100%;
+}
+
+/* Indicadores de estado ativo */
+.editor-toolbar button[class*="bg-blue-600"],
+.editor-toolbar button[class*="bg-green-600"],
+.editor-toolbar button[class*="bg-purple-600"] {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Animações suaves */
+.editor-toolbar button,
+.editor-toolbar select {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-toolbar button:active {
+  transform: translateY(0);
+}
+
+/* Melhorias no select */
+.editor-toolbar select:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .editor-toolbar .hidden {
+    display: none !important;
+  }
+
+  .editor-toolbar .space-x-6 {
+    gap: 1rem;
+  }
+
+  .editor-toolbar .space-x-3 {
+    gap: 0.5rem;
+  }
+}
+
+/* Melhorar aparência do Style Manager nativo */
+:deep(.gjs-sm-container) {
+  background: #1f2937 !important;
+}
+
+:deep(.gjs-sm-sector) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+}
+
+:deep(.gjs-sm-sector .gjs-sm-title) {
+  background: #374151 !important;
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+  padding: 12px 16px !important;
+  font-weight: 600 !important;
+}
+
+:deep(.gjs-sm-properties) {
+  background: #1f2937 !important;
+  padding: 8px !important;
+}
+
+:deep(.gjs-sm-property) {
+  border-color: #374151 !important;
+  padding: 8px 12px !important;
+  background: #1f2937 !important;
+}
+
+:deep(.gjs-sm-property:hover) {
+  background: #374151 !important;
+}
+
+:deep(.gjs-sm-label) {
+  color: #f3f4f6 !important;
+  font-weight: 500 !important;
+}
+
+:deep(.gjs-sm-input) {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #f3f4f6 !important;
+  border-radius: 4px !important;
+  padding: 6px 8px !important;
+}
+
+:deep(.gjs-sm-input:focus) {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+:deep(.gjs-sm-btn) {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #f3f4f6 !important;
+  border-radius: 4px !important;
+  padding: 6px 12px !important;
+}
+
+:deep(.gjs-sm-btn:hover) {
+  background: #3b82f6 !important;
+  border-color: #2563eb !important;
+}
+
+:deep(.gjs-sm-color-picker) {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+}
+
+:deep(.gjs-sm-select) {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #f3f4f6 !important;
+  border-radius: 4px !important;
+}
+
+/* Estilos para o Selector Manager (Classes CSS) */
+:deep(.gjs-clm-container) {
+  background: #1f2937 !important;
+  border-bottom: 1px solid #374151 !important;
+  margin-bottom: 16px !important;
+}
+
+:deep(.gjs-clm-header) {
+  background: #374151 !important;
+  border-bottom: 1px solid #4b5563 !important;
+  padding: 12px 16px !important;
+}
+
+:deep(.gjs-clm-header-label) {
+  color: #f3f4f6 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+:deep(.gjs-clm-tags) {
+  background: #1f2937 !important;
+  padding: 12px 16px !important;
+}
+
+:deep(.gjs-clm-tag) {
+  background: #4b5563 !important;
+  border: 1px solid #6b7280 !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+  color: #f3f4f6 !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+}
+
+:deep(.gjs-clm-tag:hover) {
+  background: #3b82f6 !important;
+  border-color: #2563eb !important;
+}
+
+:deep(.gjs-clm-tag.gjs-clm-tag--selected) {
+  background: #059669 !important;
+  border-color: #047857 !important;
+}
+
+:deep(.gjs-clm-tags-btn) {
+  background: #059669 !important;
+  border: 1px solid #047857 !important;
+  border-radius: 4px !important;
+  color: white !important;
+  padding: 4px 8px !important;
+  margin: 2px !important;
+  font-size: 12px !important;
+}
+
+:deep(.gjs-clm-tags-btn:hover) {
+  background: #047857 !important;
 }
 </style>
