@@ -1,0 +1,202 @@
+.advanced-text-block {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  margin: 1rem 0;
+  min-height: 120px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.advanced-text-block:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
+}
+
+.advanced-text-block.gjs-selected {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.editable-content {
+  padding: 1.5rem;
+  min-height: 100px;
+  line-height: 1.6;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.editable-content:focus {
+  outline: none;
+  background: #ffffff;
+}
+
+/* Estilos para elementos editáveis */
+.editable-content h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  color: #1a202c;
+}
+
+.editable-content h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  color: #2d3748;
+}
+
+.editable-content h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  color: #4a5568;
+}
+
+.editable-content h4 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  color: #4a5568;
+}
+
+.editable-content p {
+  margin: 1rem 0;
+  color: #4a5568;
+}
+
+.editable-content ul,
+.editable-content ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.editable-content li {
+  margin: 0.5rem 0;
+  color: #4a5568;
+}
+
+.editable-content blockquote {
+  border-left: 4px solid #007bff;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.editable-content code {
+  background: #f1f3f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.editable-content pre {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.editable-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.editable-content a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.editable-content a:hover {
+  color: #0056b3;
+}
+
+.editable-content strong,
+.editable-content b {
+  font-weight: bold;
+}
+
+.editable-content em,
+.editable-content i {
+  font-style: italic;
+}
+
+.editable-content u {
+  text-decoration: underline;
+}
+
+.editable-content s,
+.editable-content strike {
+  text-decoration: line-through;
+}
+
+.editable-content mark {
+  background: #fff3cd;
+  padding: 0.1rem 0.2rem;
+}
+
+.editable-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.editable-content table th,
+.editable-content table td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.editable-content table th {
+  background: #f8f9fa;
+  font-weight: bold;
+}
+
+.editable-content hr {
+  border: none;
+  border-top: 2px solid #dee2e6;
+  margin: 2rem 0;
+}
+
+/* Placeholder quando vazio */
+.editable-content:empty::before {
+  content: "Clique para começar a escrever...";
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Animações */
+.advanced-text-block {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .editable-content {
+    padding: 1rem;
+  }
+
+  .editable-content h1 {
+    font-size: 2rem;
+  }
+
+  .editable-content h2 {
+    font-size: 1.5rem;
+  }
+}

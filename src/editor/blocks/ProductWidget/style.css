@@ -1,0 +1,33 @@
+/* Estilos para o ProductWidget */
+.product-widget-container {
+  font-family: "Inter", sans-serif;
+}
+
+.product-widget-container .bg-white {
+  background-color: #ffffff;
+}
+
+.product-widget-container .border-gray-200 {
+  border-color: #e5e7eb;
+}
+
+.product-widget-container .text-gray-900 {
+  color: #111827;
+}
+
+.product-widget-container .text-gray-600 {
+  color: #4b5563;
+}
+
+.product-widget-container .text-blue-600 {
+  color: #2563eb;
+}
+
+.product-widget-container .bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+.product-widget-container:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}

@@ -1,0 +1,93 @@
+/* GrapesJS Styles */
+@import "grapesjs/dist/css/grapes.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the editor */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Override GrapesJS default styles */
+.gjs-editor-cont {
+  height: 100vh !important;
+}
+
+.gjs-pn-panels {
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+}
+
+.gjs-pn-panel {
+  background: transparent;
+}
+
+.gjs-pn-commands {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem;
+}
+
+/* Custom button styles */
+.gjs-pn-btn {
+  @apply px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  @apply bg-blue-600 text-white border-blue-600;
+}
+
+/* Block manager styles */
+.gjs-blocks-c {
+  padding: 1rem;
+}
+
+.gjs-block {
+  @apply mb-2 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all;
+}
+
+.gjs-block:hover {
+  transform: translateY(-1px);
+}
+
+/* Style manager styles */
+.gjs-sm-properties {
+  padding: 1rem;
+}
+
+.gjs-sm-sector {
+  @apply mb-4;
+}
+
+.gjs-sm-title {
+  @apply text-sm font-semibold text-gray-700 mb-2 pb-2 border-b border-gray-200;
+}
+
+/* Layer manager styles */
+.gjs-lm-layers {
+  padding: 1rem;
+}
+
+.gjs-lm-layer {
+  @apply py-1 px-2 text-sm text-gray-700 hover:bg-gray-100 rounded;
+}
+
+/* Canvas styles */
+.gjs-cv-canvas {
+  background: #f1f5f9;
+}
+
+.gjs-frame {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

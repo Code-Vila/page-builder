@@ -1,0 +1,53 @@
+.rich-text-block {
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  min-height: 100px;
+  transition: all 0.3s ease;
+}
+
+.rich-text-block:hover {
+  border-color: #667eea;
+  background: #edf2f7;
+}
+
+.rich-text-block.primary {
+  background: #ebf4ff;
+  border-color: #4299e1;
+}
+
+.rich-text-block.secondary {
+  background: #fff5f5;
+  border-color: #fc8181;
+}
+
+/* Estilo para o texto dentro do bloco */
+.rich-text-block [data-gjs-type="text"] {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Melhorar a experiência de edição */
+.gjs-selected .rich-text-block {
+  border: 2px solid #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* Estilos para o RTE (Rich Text Editor) */
+.gjs-rte-toolbar {
+  background: #2d3748;
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.gjs-rte-toolbar .gjs-rte-btn {
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.gjs-rte-toolbar .gjs-rte-btn:hover {
+  background: #4a5568;
+}

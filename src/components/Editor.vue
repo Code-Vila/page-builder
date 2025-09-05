@@ -1,0 +1,1073 @@
+<template>
+  <div class="editor-container bg-gray-900 text-gray-100">
+    <!-- Barra de ferramentas superior ampliada -->
+    <div class="editor-toolbar bg-gray-800 border-b border-gray-700 p-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <h1 class="text-xl font-bold text-white">Construtor de Páginas</h1>
+          <div class="flex items-center space-x-2">
+            <button
+              @click="savePage"
+              :disabled="isSaving"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+            >
+              <svg
+                v-if="isSaving"
+                class="animate-spin h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>{{ isSaving ? "Salvando..." : "Salvar" }}</span>
+            </button>
+
+            <button
+              @click="exportHTML"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span>Exportar</span>
+            </button>
+
+            <button
+              @click="previewPage"
+              class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <span>Preview</span>
+            </button>
+
+            <!-- Novo botão para visualizar código -->
+            <button
+              @click="toggleCodeViewer"
+              :class="[
+                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
+                showCodeViewer
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
+              ]"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                />
+              </svg>
+              <span>Código</span>
+            </button>
+
+            <!-- Novo botão para régua/guias -->
+            <button
+              @click="toggleRulers"
+              :class="[
+                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
+                rulersEnabled
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
+              ]"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              <span>Réguas</span>
+            </button>
+
+            <!-- Novo botão para modo de visualização -->
+            <button
+              @click="togglePreviewMode"
+              :class="[
+                'px-4 py-2 rounded-md flex items-center space-x-2 transition-colors',
+                previewMode
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500',
+              ]"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <span>{{ previewMode ? "Editar" : "Visualizar" }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <select
+            v-model="selectedDevice"
+            @change="changeDevice"
+            class="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="desktop">🖥️ Desktop</option>
+            <option value="tablet">📱 Tablet</option>
+            <option value="mobile">📱 Mobile</option>
+          </select>
+
+          <button
+            @click="toggleFullscreen"
+            class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-md transition-colors"
+            title="Tela Cheia"
+          >
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Área principal do editor -->
+    <div class="editor-content flex-1 relative flex">
+      <!-- Painel lateral esquerdo -->
+      <div class="gjs-left-panel w-64 bg-gray-800 border-r border-gray-700">
+        <!-- Abas dos painéis -->
+        <div class="gjs-panel-tabs border-b border-gray-700">
+          <div class="flex">
+            <button
+              class="gjs-tab-blocks flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500"
+              data-tab="blocks"
+              @click="switchLeftTab('blocks')"
+            >
+              Blocos
+            </button>
+            <button
+              class="gjs-tab-layers flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-transparent"
+              data-tab="layers"
+              @click="switchLeftTab('layers')"
+            >
+              Camadas
+            </button>
+          </div>
+        </div>
+
+        <!-- Conteúdo dos painéis -->
+        <div class="gjs-panel-content h-full overflow-y-auto">
+          <!-- Painel de blocos -->
+          <div id="blocks-container" class="gjs-blocks-container p-3"></div>
+          <!-- Painel de camadas -->
+          <div
+            id="layers-container"
+            class="gjs-layers-container p-3"
+            style="display: none"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Área do canvas com régua -->
+      <div
+        class="gjs-canvas-container flex-1 relative flex items-center justify-center p-4 bg-gray-900"
+      >
+        <!-- Réguas de medida -->
+        <div
+          v-if="rulersEnabled"
+          class="rulers-container absolute inset-0 pointer-events-none z-10"
+        >
+          <div
+            class="horizontal-ruler absolute top-0 left-0 right-0 h-6 bg-gray-800 bg-opacity-80 border-b border-gray-700"
+          ></div>
+          <div
+            class="vertical-ruler absolute left-0 top-0 bottom-0 w-6 bg-gray-800 bg-opacity-80 border-r border-gray-700"
+          ></div>
+        </div>
+
+        <div id="gjs" class="h-full w-full"></div>
+      </div>
+
+      <!-- Painel lateral direito -->
+      <div class="gjs-right-panel w-64 bg-gray-800 border-l border-gray-700">
+        <!-- Abas do painel direito -->
+        <div class="gjs-panel-tabs border-b border-gray-700">
+          <div class="flex">
+            <button
+              class="gjs-tab-styles flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500"
+              data-tab="styles"
+              @click="switchRightTab('styles')"
+            >
+              Estilos
+            </button>
+            <button
+              class="gjs-tab-traits flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-transparent"
+              data-tab="traits"
+              @click="switchRightTab('traits')"
+            >
+              Props
+            </button>
+          </div>
+        </div>
+
+        <!-- Conteúdo dos painéis direitos -->
+        <div class="gjs-panel-content h-full overflow-y-auto">
+          <!-- Painel de estilos -->
+          <div id="styles-container" class="gjs-styles-container p-3"></div>
+          <!-- Painel de traits -->
+          <div
+            id="traits-container"
+            class="gjs-traits-container p-3"
+            style="display: none"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visualizador de código modal -->
+    <div
+      v-if="showCodeViewer"
+      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+    >
+      <div class="bg-gray-800 rounded-lg w-11/12 h-5/6 max-w-4xl flex flex-col">
+        <div
+          class="flex justify-between items-center p-4 border-b border-gray-700"
+        >
+          <h3 class="text-lg font-semibold text-white">Código Gerado</h3>
+          <button
+            @click="toggleCodeViewer"
+            class="text-gray-400 hover:text-white"
+          >
+            <svg
+              class="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-auto p-4">
+          <div class="mb-4">
+            <h4 class="text-white mb-2">HTML:</h4>
+            <pre
+              class="bg-gray-900 p-4 rounded overflow-x-auto text-sm text-green-400"
+            ><code>{{ generatedHTML }}</code></pre>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="text-white mb-2">CSS:</h4>
+            <pre
+              class="bg-gray-900 p-4 rounded overflow-x-auto text-sm text-blue-400"
+            ><code>{{ generatedCSS }}</code></pre>
+          </div>
+
+          <div>
+            <h4 class="text-white mb-2">JavaScript:</h4>
+            <pre
+              class="bg-gray-900 p-4 rounded overflow-x-auto text-sm text-yellow-400"
+            ><code>{{ generatedJS }}</code></pre>
+          </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-700 flex justify-end space-x-2">
+          <button
+            @click="copyCode('html')"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Copiar HTML
+          </button>
+          <button
+            @click="copyCode('css')"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Copiar CSS
+          </button>
+          <button
+            @click="copyCode('js')"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Copiar JS
+          </button>
+          <button
+            @click="downloadAllCode"
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Baixar Tudo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notificações -->
+    <div v-if="notification.show" class="fixed top-4 right-4 z-50 max-w-sm">
+      <div
+        :class="[
+          'p-4 rounded-lg shadow-lg',
+          notification.type === 'success'
+            ? 'bg-green-600 text-white'
+            : 'bg-red-600 text-white',
+        ]"
+      >
+        <div class="flex items-center space-x-2">
+          <svg
+            v-if="notification.type === 'success'"
+            class="h-5 w-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <svg v-else class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ notification.message }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, reactive, ref, nextTick } from "vue";
+import grapesjs from "grapesjs";
+import "grapesjs/dist/css/grapes.min.css";
+import type { Editor } from "grapesjs";
+
+// Importar configuração do editor
+import { setupGrapesEditor } from "../editor/index";
+
+// Estado do componente
+const editor = ref<Editor | null>(null);
+const isSaving = ref(false);
+const selectedDevice = ref("desktop");
+const showCodeViewer = ref(false);
+const rulersEnabled = ref(false);
+const previewMode = ref(false);
+const generatedHTML = ref("");
+const generatedCSS = ref("");
+const generatedJS = ref("");
+
+// Sistema de notificações
+const notification = reactive({
+  show: false,
+  type: "success" as "success" | "error",
+  message: "",
+});
+
+// Configuração do editor
+const editorConfig = {
+  container: "#gjs",
+  height: "100%",
+  width: "100%",
+  fromElement: true,
+  avoidInlineStyle: false,
+  storageManager: false,
+
+  // Configuração dos blocos
+  blockManager: {
+    appendTo: "#blocks-container",
+  },
+
+  // Configuração do canvas
+  canvas: {
+    styles: [
+      `
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1f2937;
+        color: #f3f4f6;
+      }
+      .gjs-frame {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      `,
+    ],
+  },
+
+  // Configuração do gerenciador de estilo
+  styleManager: {
+    appendTo: "#styles-container",
+    sectors: [
+      {
+        name: "Layout",
+        open: false,
+        properties: [
+          "display",
+          "position",
+          "top",
+          "right",
+          "left",
+          "bottom",
+          "width",
+          "height",
+          "max-width",
+          "min-height",
+          "margin",
+          "padding",
+        ],
+      },
+      {
+        name: "Tipografia",
+        open: false,
+        properties: [
+          "font-family",
+          "font-size",
+          "font-weight",
+          "letter-spacing",
+          "color",
+          "line-height",
+          "text-shadow",
+          "text-align",
+        ],
+      },
+      {
+        name: "Aparência",
+        open: false,
+        properties: [
+          "background-color",
+          "background-image",
+          "border",
+          "border-radius",
+          "box-shadow",
+          "opacity",
+        ],
+      },
+    ],
+  },
+
+  // Configuração do gerenciador de camadas
+  layerManager: {
+    appendTo: "#layers-container",
+  },
+
+  // Configuração do gerenciador de traits
+  traitManager: {
+    appendTo: "#traits-container",
+  },
+
+  // Configuração do Device Manager
+  deviceManager: {
+    devices: [
+      {
+        name: "Desktop",
+        width: "",
+      },
+      {
+        name: "Tablet",
+        width: "768px",
+        widthMedia: "992px",
+      },
+      {
+        name: "Mobile",
+        width: "320px",
+        widthMedia: "575px",
+      },
+    ],
+  },
+
+  // Habilitar réguas e guias
+  canvasCss: `
+    .gjs-rulers {
+      background-color: rgba(30, 41, 59, 0.8);
+      border-color: #374151;
+    }
+    .gjs-ruler-h {
+      top: 0;
+      height: 25px;
+      border-bottom: 1px solid #374151;
+    }
+    .gjs-ruler-v {
+      left: 0;
+      width: 25px;
+      border-right: 1px solid #374151;
+    }
+  `,
+
+  // Configurações para melhor experiência
+  showOffsets: true,
+  showDevices: true,
+};
+
+// Novos métodos
+const toggleCodeViewer = () => {
+  showCodeViewer.value = !showCodeViewer.value;
+  if (showCodeViewer.value && editor.value) {
+    generatedHTML.value = editor.value.getHtml();
+    generatedCSS.value = editor.value.getCss();
+    generatedJS.value = editor.value.getJs();
+  }
+};
+
+const toggleRulers = () => {
+  rulersEnabled.value = !rulersEnabled.value;
+  // Por enquanto, apenas alterna o estado visual
+  // A implementação completa dos rulers pode ser adicionada depois
+  console.log(`Rulers ${rulersEnabled.value ? "ativadas" : "desativadas"}`);
+};
+
+const togglePreviewMode = () => {
+  previewMode.value = !previewMode.value;
+  // Por enquanto, apenas alterna o estado visual
+  // A implementação completa do preview mode pode ser adicionada depois
+};
+
+const copyCode = (type: string) => {
+  let code = "";
+  switch (type) {
+    case "html":
+      code = generatedHTML.value;
+      break;
+    case "css":
+      code = generatedCSS.value;
+      break;
+    case "js":
+      code = generatedJS.value;
+      break;
+  }
+
+  navigator.clipboard.writeText(code).then(() => {
+    showNotification(
+      `${type.toUpperCase()} copiado para a área de transferência!`
+    );
+  });
+};
+
+const downloadAllCode = () => {
+  const fullCode = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Gerada</title>
+    <style>
+        ${generatedCSS.value}
+    </style>
+</head>
+<body>
+    ${generatedHTML.value}
+    <script>
+        ${generatedJS.value}
+    <\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([fullCode], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "pagina-completa.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showNotification("Página completa baixada com sucesso!");
+};
+
+// Métodos existentes...
+const showNotification = (
+  message: string,
+  type: "success" | "error" = "success"
+) => {
+  notification.message = message;
+  notification.type = type;
+  notification.show = true;
+
+  setTimeout(() => {
+    notification.show = false;
+  }, 3000);
+};
+
+const savePage = async () => {
+  if (!editor.value) return;
+
+  isSaving.value = true;
+
+  try {
+    // Simular salvamento
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    showNotification("Página salva com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao salvar:", error);
+    showNotification("Erro ao salvar a página", "error");
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const exportHTML = () => {
+  if (!editor.value) return;
+
+  const html = editor.value.getHtml();
+  const css = editor.value.getCss();
+  const js = editor.value.getJs();
+
+  const fullHtml = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Gerada</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        ${css}
+    </style>
+</head>
+<body>
+    ${html}
+    <script>
+        ${js}
+    <\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([fullHtml], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "pagina-export.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showNotification("HTML exportado com sucesso!", "success");
+};
+
+const previewPage = () => {
+  if (!editor.value) return;
+
+  const html = editor.value.getHtml();
+  const css = editor.value.getCss();
+  const js = editor.value.getJs();
+
+  const fullHtml = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview da Página</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        ${css}
+    </style>
+</head>
+<body>
+    ${html}
+    <script>
+        ${js}
+    <\/script>
+</body>
+</html>`;
+
+  const previewWindow = window.open("", "_blank");
+  if (previewWindow) {
+    previewWindow.document.write(fullHtml);
+    previewWindow.document.close();
+  }
+};
+
+const changeDevice = () => {
+  if (!editor.value) return;
+
+  // Por enquanto, apenas altera o estado visual
+  // A implementação completa da mudança de dispositivo pode ser adicionada depois
+  console.log(`Dispositivo alterado para: ${selectedDevice.value}`);
+};
+
+const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+};
+
+const switchLeftTab = (tab: string) => {
+  const blocksContainer = document.getElementById("blocks-container");
+  const layersContainer = document.getElementById("layers-container");
+  const blocksTab = document.querySelector(".gjs-tab-blocks");
+  const layersTab = document.querySelector(".gjs-tab-layers");
+
+  if (blocksContainer && layersContainer && blocksTab && layersTab) {
+    if (tab === "blocks") {
+      blocksContainer.style.display = "block";
+      layersContainer.style.display = "none";
+      blocksTab.classList.add("border-blue-500", "text-white");
+      blocksTab.classList.remove("border-transparent", "text-gray-300");
+      layersTab.classList.remove("border-blue-500", "text-white");
+      layersTab.classList.add("border-transparent", "text-gray-300");
+    } else {
+      blocksContainer.style.display = "none";
+      layersContainer.style.display = "block";
+      layersTab.classList.add("border-blue-500", "text-white");
+      layersTab.classList.remove("border-transparent", "text-gray-300");
+      blocksTab.classList.remove("border-blue-500", "text-white");
+      blocksTab.classList.add("border-transparent", "text-gray-300");
+    }
+  }
+};
+
+const switchRightTab = (tab: string) => {
+  const stylesContainer = document.getElementById("styles-container");
+  const traitsContainer = document.getElementById("traits-container");
+  const stylesTab = document.querySelector(".gjs-tab-styles");
+  const traitsTab = document.querySelector(".gjs-tab-traits");
+
+  if (stylesContainer && traitsContainer && stylesTab && traitsTab) {
+    if (tab === "styles") {
+      stylesContainer.style.display = "block";
+      traitsContainer.style.display = "none";
+      stylesTab.classList.add("border-blue-500", "text-white");
+      stylesTab.classList.remove("border-transparent", "text-gray-300");
+      traitsTab.classList.remove("border-blue-500", "text-white");
+      traitsTab.classList.add("border-transparent", "text-gray-300");
+    } else {
+      stylesContainer.style.display = "none";
+      traitsContainer.style.display = "block";
+      traitsTab.classList.add("border-blue-500", "text-white");
+      traitsTab.classList.remove("border-transparent", "text-gray-300");
+      stylesTab.classList.remove("border-blue-500", "text-white");
+      stylesTab.classList.add("border-transparent", "text-gray-300");
+    }
+  }
+};
+
+// Lifecycle
+onMounted(() => {
+  console.log("🚀 Inicializando GrapesJS Editor...");
+
+  nextTick(() => {
+    editor.value = grapesjs.init(editorConfig);
+
+    // Configurar editor personalizado com blocos e componentes
+    setupGrapesEditor(editor.value);
+
+    // Adicionar comandos personalizados
+    editor.value.Commands.add("toggle-rulers", {
+      run: () => {
+        // Implementação futura para rulers
+        console.log("Toggling rulers");
+      },
+    });
+
+    // Configurar comandos para dispositivos
+    editor.value.Commands.add("set-device-desktop", {
+      run: () => {
+        console.log("Setting desktop device");
+        // Implementação futura para dispositivos
+      },
+    });
+
+    editor.value.Commands.add("set-device-tablet", {
+      run: () => {
+        console.log("Setting tablet device");
+        // Implementação futura para dispositivos
+      },
+    });
+
+    editor.value.Commands.add("set-device-mobile", {
+      run: () => {
+        console.log("Setting mobile device");
+        // Implementação futura para dispositivos
+      },
+    });
+
+    // Configurar eventos para as abas
+    const blocksTab = document.querySelector(".gjs-tab-blocks");
+    const layersTab = document.querySelector(".gjs-tab-layers");
+    const stylesTab = document.querySelector(".gjs-tab-styles");
+    const traitsTab = document.querySelector(".gjs-tab-traits");
+
+    if (blocksTab && layersTab) {
+      blocksTab.addEventListener("click", () => switchLeftTab("blocks"));
+      layersTab.addEventListener("click", () => switchLeftTab("layers"));
+    }
+
+    if (stylesTab && traitsTab) {
+      stylesTab.addEventListener("click", () => switchRightTab("styles"));
+      traitsTab.addEventListener("click", () => switchRightTab("traits"));
+    }
+
+    // Configurar eventos para melhor debug
+    editor.value.on("block:add", (block: any) => {
+      console.log("Bloco adicionado:", block);
+    });
+
+    editor.value.on("component:add", (component: any) => {
+      console.log("Componente adicionado:", component);
+    });
+
+    // Adicionar hotkeys
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case "s":
+            e.preventDefault();
+            savePage();
+            break;
+          case "e":
+            e.preventDefault();
+            exportHTML();
+            break;
+          case "p":
+            e.preventDefault();
+            previewPage();
+            break;
+          case "/":
+            e.preventDefault();
+            toggleCodeViewer();
+            break;
+        }
+      }
+    });
+
+    console.log("✅ Editor inicializado com sucesso!");
+  });
+});
+</script>
+
+<style scoped>
+/* Estilos existentes... */
+
+/* Estilos para as réguas */
+.rulers-container {
+  background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.horizontal-ruler,
+.vertical-ruler {
+  background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.2) 1px,
+      transparent 1px
+    ),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+/* Estilos para o visualizador de código */
+pre {
+  font-family: "Fira Code", "Monaco", "Cascadia Code", "Roboto Mono", monospace;
+  line-height: 1.5;
+}
+
+code {
+  font-family: inherit;
+}
+
+.editor-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #111827;
+}
+
+.editor-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Estilização das abas */
+.gjs-panel-tabs button {
+  transition: all 0.2s ease;
+}
+
+.gjs-panel-tabs button:hover {
+  background-color: #374151;
+}
+
+/* Melhorar o visual dos blocos */
+:deep(.gjs-block) {
+  background: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  margin: 4px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #f3f4f6;
+}
+
+:deep(.gjs-block:hover) {
+  background: #3b82f6;
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+:deep(.gjs-block-category) {
+  color: #f3f4f6;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  border-bottom: 1px solid #4b5563;
+}
+
+/* Sobrescrever estilos do GrapesJS para tema escuro */
+:deep(.gjs-pn-panel) {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+:deep(.gjs-pn-btn) {
+  color: #f3f4f6 !important;
+}
+
+:deep(.gjs-pn-btn:hover) {
+  background: #374151 !important;
+}
+
+:deep(.gjs-cv-canvas) {
+  background: #111827 !important;
+}
+
+:deep(.gjs-frame) {
+  border: 2px solid #374151 !important;
+  border-radius: 12px !important;
+  background: white !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+:deep(.gjs-sm-sector) {
+  border-color: #374151 !important;
+}
+
+:deep(.gjs-sm-label) {
+  color: #f3f4f6 !important;
+}
+
+:deep(.gjs-sm-property) {
+  border-color: #374151 !important;
+}
+
+:deep(.gjs-sm-input) {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+:deep(.gjs-layer) {
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+:deep(.gjs-layer:hover) {
+  background: #374151 !important;
+}
+
+/* Estilos para as réguas */
+.rulers-container {
+  background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+</style>
