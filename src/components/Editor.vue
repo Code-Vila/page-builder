@@ -1217,41 +1217,59 @@ const getTemplatesByCategory = (category: string) => {
 };
 
 // No seu componente Vue
+// const applyTemplate = async (templateId: string) => {
+//   if (!editor.value || isApplyingTemplate.value) return;
+
+//   const confirmApply = confirm(
+//     "Aplicar este template irá substituir todo o conteúdo atual. Deseja continuar?"
+//   );
+
+//   if (!confirmApply) return;
+
+//   try {
+//     isApplyingTemplate.value = true;
+//     showNotification("Aplicando template...");
+
+//     // Desabilitar UI
+//     const templateButtons = document.querySelectorAll(".template-item");
+//     templateButtons.forEach((btn) => {
+//       (btn as HTMLElement).style.pointerEvents = "none";
+//       (btn as HTMLElement).style.opacity = "0.5";
+//     });
+
+//     // Usar a versão SIMPLE (mais confiável)
+//     templateRegistry.applyTemplateUltraSimple(editor.value, templateId);
+
+//     showNotification("Template aplicado com sucesso!", "success");
+//   } catch (error) {
+//     console.error("Erro ao aplicar template:", error);
+//     showNotification("Erro ao aplicar template", "error");
+//   } finally {
+//     // Reabilitar UI
+//     isApplyingTemplate.value = false;
+//     const templateButtons = document.querySelectorAll(".template-item");
+//     templateButtons.forEach((btn) => {
+//       (btn as HTMLElement).style.pointerEvents = "auto";
+//       (btn as HTMLElement).style.opacity = "1";
+//     });
+//   }
+// };
+
 const applyTemplate = async (templateId: string) => {
-  if (!editor.value || isApplyingTemplate.value) return;
-
-  const confirmApply = confirm(
-    "Aplicar este template irá substituir todo o conteúdo atual. Deseja continuar?"
-  );
-
-  if (!confirmApply) return;
+  if (!editor.value) return;
 
   try {
     isApplyingTemplate.value = true;
-    showNotification("Aplicando template...");
 
-    // Desabilitar UI
-    const templateButtons = document.querySelectorAll(".template-item");
-    templateButtons.forEach((btn) => {
-      (btn as HTMLElement).style.pointerEvents = "none";
-      (btn as HTMLElement).style.opacity = "0.5";
-    });
+    // TESTE: Usar método simples e controlado
+    templateRegistry.applyTemplateSimple(editor.value, templateId);
 
-    // TESTE: Usar versão minimal para evitar erro "element is not removable"
-    templateRegistry.applyTemplateMinimal(editor.value, templateId);
-
-    showNotification("Template aplicado com sucesso!", "success");
+    showNotification("Template adicionado com sucesso!", "success");
   } catch (error) {
     console.error("Erro ao aplicar template:", error);
     showNotification("Erro ao aplicar template", "error");
   } finally {
-    // Reabilitar UI
     isApplyingTemplate.value = false;
-    const templateButtons = document.querySelectorAll(".template-item");
-    templateButtons.forEach((btn) => {
-      (btn as HTMLElement).style.pointerEvents = "auto";
-      (btn as HTMLElement).style.opacity = "1";
-    });
   }
 };
 
