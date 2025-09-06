@@ -942,15 +942,12 @@ const previewPage = () => {
 const changeDevice = () => {
   if (!editor.value) return;
 
-  console.log(`📱 Iniciando mudança para: ${selectedDevice.value}`);
-
   try {
     const editorInstance = editor.value as any;
 
     // Método 1: runCommand do GrapesJS
     if (editorInstance.runCommand) {
       editorInstance.runCommand("set-device", { name: selectedDevice.value });
-      console.log("✅ Comando set-device executado");
     }
 
     // Método 2: Device Manager diretamente
@@ -963,7 +960,6 @@ const changeDevice = () => {
 
       if (targetDevice) {
         deviceManager.select(targetDevice);
-        console.log("✅ Dispositivo selecionado via DeviceManager");
       } else {
         console.warn("⚠️ Dispositivo não encontrado:", selectedDevice.value);
       }
@@ -973,24 +969,24 @@ const changeDevice = () => {
     forceCanvasUpdate();
 
     // Método 4: Refresh e triggers
-    setTimeout(() => {
-      if (editorInstance.refresh) {
-        editorInstance.refresh();
-      }
+    // setTimeout(() => {
+    //   if (editorInstance.refresh) {
+    //     editorInstance.refresh();
+    //   }
 
-      if (editorInstance.trigger) {
-        editorInstance.trigger("canvas:update");
-        editorInstance.trigger("canvas:render");
-      }
+    //   if (editorInstance.trigger) {
+    //     editorInstance.trigger("canvas:update");
+    //     editorInstance.trigger("canvas:render");
+    //   }
 
-      console.log("✅ Refresh e atualizações executados");
-    }, 150);
+    //   console.log("✅ Refresh e atualizações executados");
+    // }, 150);
 
-    showNotification(`Canvas alterado para ${selectedDevice.value}`, "success");
+    // showNotification(`Canvas alterado para ${selectedDevice.value}`, "success");
     console.log(`✅ Dispositivo ${selectedDevice.value} processado`);
   } catch (error) {
     console.error("❌ Erro ao alterar dispositivo:", error);
-    showNotification(`Erro ao alterar para ${selectedDevice.value}`, "error");
+    // showNotification(`Erro ao alterar para ${selectedDevice.value}`, "error");
   }
 };
 
@@ -1111,82 +1107,82 @@ onMounted(() => {
     setupGrapesEditor(editor.value);
 
     // Debug dos dispositivos disponíveis
-    setTimeout(() => {
-      const deviceManager = (editor.value as any).DeviceManager;
-      if (deviceManager) {
-        console.log("🔧 Device Manager disponível:", deviceManager);
-        const devices = deviceManager.getAll();
-        console.log(
-          "📱 Dispositivos disponíveis:",
-          devices.map((d: any) => d.get("name"))
-        );
+    // setTimeout(() => {
+    //   const deviceManager = (editor.value as any).DeviceManager;
+    //   if (deviceManager) {
+    //     console.log("🔧 Device Manager disponível:", deviceManager);
+    //     const devices = deviceManager.getAll();
+    //     console.log(
+    //       "📱 Dispositivos disponíveis:",
+    //       devices.map((d: any) => d.get("name"))
+    //     );
 
-        // Definir dispositivo inicial
-        deviceManager.select("Desktop");
-        console.log("🖥️ Dispositivo Desktop selecionado inicialmente");
+    //     // Definir dispositivo inicial
+    //     deviceManager.select("Desktop");
+    //     console.log("🖥️ Dispositivo Desktop selecionado inicialmente");
 
-        // Teste automático completo para debug
-        setTimeout(() => {
-          console.log("🧪 INICIANDO TESTE COMPLETO DE DISPOSITIVOS");
+    //     // Teste automático completo para debug
+    //     setTimeout(() => {
+    //       console.log("🧪 INICIANDO TESTE COMPLETO DE DISPOSITIVOS");
 
-          // Teste 1: Tablet
-          console.log("📱 Teste 1: Mudando para Tablet");
-          selectedDevice.value = "Tablet";
-          changeDevice();
+    //       // Teste 1: Tablet
+    //       console.log("📱 Teste 1: Mudando para Tablet");
+    //       selectedDevice.value = "Tablet";
+    //       changeDevice();
 
-          setTimeout(() => {
-            const frame = document.querySelector(".gjs-frame") as HTMLElement;
-            if (frame) {
-              console.log(
-                "📏 Largura do frame após Tablet:",
-                frame.style.width
-              );
-              console.log(
-                "🖼️ Largura computada:",
-                getComputedStyle(frame).width
-              );
-            }
+    //       setTimeout(() => {
+    //         const frame = document.querySelector(".gjs-frame") as HTMLElement;
+    //         if (frame) {
+    //           console.log(
+    //             "📏 Largura do frame após Tablet:",
+    //             frame.style.width
+    //           );
+    //           console.log(
+    //             "🖼️ Largura computada:",
+    //             getComputedStyle(frame).width
+    //           );
+    //         }
 
-            // Teste 2: Mobile
-            console.log("📱 Teste 2: Mudando para Mobile");
-            selectedDevice.value = "Mobile";
-            changeDevice();
+    //         // Teste 2: Mobile
+    //         console.log("📱 Teste 2: Mudando para Mobile");
+    //         selectedDevice.value = "Mobile";
+    //         changeDevice();
 
-            setTimeout(() => {
-              if (frame) {
-                console.log(
-                  "📏 Largura do frame após Mobile:",
-                  frame.style.width
-                );
-                console.log(
-                  "🖼️ Largura computada:",
-                  getComputedStyle(frame).width
-                );
-              }
+    //         setTimeout(() => {
+    //           if (frame) {
+    //             console.log(
+    //               "📏 Largura do frame após Mobile:",
+    //               frame.style.width
+    //             );
+    //             console.log(
+    //               "🖼️ Largura computada:",
+    //               getComputedStyle(frame).width
+    //             );
+    //           }
 
-              // Teste 3: Voltar para Desktop
-              setTimeout(() => {
-                console.log("📱 Teste 3: Voltando para Desktop");
-                selectedDevice.value = "Desktop";
-                changeDevice();
+    //           // Teste 3: Voltar para Desktop
+    //           setTimeout(() => {
+    //             console.log("📱 Teste 3: Voltando para Desktop");
+    //             selectedDevice.value = "Desktop";
+    //             changeDevice();
 
-                setTimeout(() => {
-                  if (frame) {
-                    console.log(
-                      "📏 Largura final do frame:",
-                      frame.style.width
-                    );
-                    console.log("✅ Teste automático concluído");
-                  }
-                }, 1000);
-              }, 2000);
-            }, 2000);
-          }, 2000);
-        }, 5000);
-      } else {
-        console.error("❌ Device Manager não encontrado!");
-      }
-    }, 200);
+    //             setTimeout(() => {
+    //               if (frame) {
+    //                 console.log(
+    //                   "📏 Largura final do frame:",
+    //                   frame.style.width
+    //                 );
+    //                 console.log("✅ Teste automático concluído");
+    //               }
+    //             }, 1000);
+    //           }, 2000);
+    //         }, 2000);
+    //       }, 2000);
+    //     }, 5000);
+    //   } else {
+    //     console.error("❌ Device Manager não encontrado!");
+    //   }
+    // }, 200);
 
     // Forçar remoção de painéis automáticos após inicialização
     setTimeout(() => {
