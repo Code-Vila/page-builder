@@ -5,11 +5,11 @@ import { setupBlocks, getAllBlocksCSS } from "./blocks";
  * Configuração principal do editor GrapesJS
  * Este arquivo registra todos os blocos, componentes e plugins customizados
  */
-export const setupGrapesEditor = (editor: any) => {
+export const setupGrapesEditor = async (editor: any) => {
   console.log("🚀 Inicializando editor personalizado...");
 
   // Registrar todos os blocos (básicos e complexos)
-  setupBlocks(editor);
+  await setupBlocks(editor);
 
   // Injetar CSS dos blocos no canvas
   const blocksCSS = getAllBlocksCSS();

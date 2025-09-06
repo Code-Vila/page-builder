@@ -1097,14 +1097,78 @@ const switchRightTab = (tab: string) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   console.log("🚀 Inicializando GrapesJS Editor...");
 
-  nextTick(() => {
+  await nextTick(async () => {
     editor.value = grapesjs.init(editorConfig);
 
     // Configurar editor personalizado com blocos e componentes
-    setupGrapesEditor(editor.value);
+    await setupGrapesEditor(editor.value);
+
+    // Diagnóstico detalhado dos blocos no painel
+    setTimeout(() => {
+      console.log("🔍 DIAGNÓSTICO DO PAINEL DE BLOCOS");
+
+      if (!editor.value) return;
+
+      const blockManager = editor.value.BlockManager;
+      const allBlocks = blockManager.getAll();
+
+      console.log(`📊 Total de blocos registrados: ${allBlocks.length}`);
+
+      // Listar blocos por categoria
+      const categorias: Record<string, any[]> = {};
+      allBlocks.forEach((block: any) => {
+        const categoria = block.get("category") || "Sem categoria";
+        if (!categorias[categoria]) {
+          categorias[categoria] = [];
+        }
+        categorias[categoria].push({
+          id: block.get("id"),
+          label: block.get("label"),
+          visible: block.get("select") !== false,
+        });
+      });
+
+      console.log("📂 Blocos por categoria:");
+      Object.entries(categorias).forEach(([categoria, blocos]) => {
+        console.log(`\n🗂️ ${categoria} (${blocos.length} blocos):`);
+        blocos.forEach((bloco: any) => {
+          const status = bloco.visible ? "✅" : "❌";
+          console.log(`  ${status} ${bloco.id} - "${bloco.label}"`);
+        });
+      });
+
+      // Verificar se há blocos ocultos
+      const blocosOcultos = allBlocks.filter(
+        (block: any) => block.get("select") === false
+      );
+      if (blocosOcultos.length > 0) {
+        console.log(
+          `\n⚠️ ${blocosOcultos.length} blocos estão marcados como ocultos`
+        );
+      }
+
+      // Verificar elementos DOM do painel
+      console.log("\n� Verificando elementos DOM do painel:");
+      const blocksPanel = document.querySelector(".gjs-blocks-cs");
+      if (blocksPanel) {
+        console.log("✅ Painel de blocos encontrado no DOM");
+        const blockElements = blocksPanel.querySelectorAll(".gjs-block");
+        console.log(
+          `📦 Elementos de bloco visíveis no DOM: ${blockElements.length}`
+        );
+
+        if (blockElements.length < allBlocks.length) {
+          console.log(
+            `⚠️ Discrepância: ${allBlocks.length} blocos registrados vs ${blockElements.length} visíveis`
+          );
+        }
+      } else {
+        console.log("❌ Painel de blocos não encontrado no DOM");
+      }
+    }, 2000);
 
     // Debug dos dispositivos disponíveis
     // setTimeout(() => {

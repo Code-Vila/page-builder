@@ -1,0 +1,44 @@
+.star-rating-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.stars {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.star {
+  font-size: 28px;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.star.active {
+  color: #fbbf24;
+}
+
+.rating-text {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Estados ativos baseados no data-rating */
+.star-rating-widget[data-rating="1"] .star:nth-child(1),
+.star-rating-widget[data-rating="2"] .star:nth-child(-n + 2),
+.star-rating-widget[data-rating="3"] .star:nth-child(-n + 3),
+.star-rating-widget[data-rating="4"] .star:nth-child(-n + 4),
+.star-rating-widget[data-rating="5"] .star:nth-child(-n + 5) {
+  color: #fbbf24;
+}

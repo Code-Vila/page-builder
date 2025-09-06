@@ -1,0 +1,39 @@
+.heading-widget {
+  margin: 0 0 20px 0;
+  padding: 10px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1f2937;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.heading-widget:hover {
+  color: #3b82f6;
+}
+
+.heading-widget.h1 {
+  font-size: 48px;
+}
+
+.heading-widget.h2 {
+  font-size: 32px;
+}
+
+.heading-widget.h3 {
+  font-size: 24px;
+}
+
+.heading-widget.h4 {
+  font-size: 20px;
+}
+
+.heading-widget.h5 {
+  font-size: 18px;
+}
+
+.heading-widget.h6 {
+  font-size: 16px;
+}

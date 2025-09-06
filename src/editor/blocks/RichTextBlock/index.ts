@@ -73,7 +73,7 @@ export const RichTextBlock = (editor: any) => {
         dblclick: "onDoubleClick",
       },
 
-      onDoubleClick() {
+      onDoubleClick(this: any) {
         // Focar no texto ao dar duplo clique
         const textComponent = this.model.components().models[0];
         if (textComponent) {

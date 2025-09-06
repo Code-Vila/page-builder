@@ -1,0 +1,255 @@
+.toggle-widget {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.toggle-section {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toggle-section:last-child {
+  border-bottom: none;
+}
+
+.toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-header:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.toggle-header.active {
+  background: #f0f9ff;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.toggle-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.toggle-header.active::before {
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+}
+
+.toggle-title {
+  margin: 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+  padding-right: 16px;
+}
+
+.toggle-header.active .toggle-title {
+  color: #1e40af;
+}
+
+.toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  color: #6b7280;
+  font-size: 20px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.toggle-header:hover .toggle-icon {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.1);
+}
+
+.toggle-header.active .toggle-icon {
+  background: #3b82f6;
+  color: white;
+  transform: rotate(45deg);
+}
+
+.toggle-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+}
+
+.toggle-content.active {
+  max-height: 1000px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toggle-content-wrapper {
+  padding: 0 24px 24px 28px;
+  border-left: 4px solid #e5e7eb;
+  margin-left: 20px;
+}
+
+.toggle-content.active .toggle-content-wrapper {
+  border-left-color: #bfdbfe;
+}
+
+.toggle-content-wrapper p {
+  margin: 0 0 16px 0;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.toggle-content-wrapper ul {
+  margin: 0 0 20px 0;
+  padding-left: 20px;
+  color: #6b7280;
+}
+
+.toggle-content-wrapper li {
+  margin-bottom: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.highlight-box {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  color: #92400e;
+  font-size: 15px;
+}
+
+.highlight-box strong {
+  color: #78350f;
+}
+
+.example-button {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+}
+
+.example-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.contact-info {
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.contact-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.contact-info strong {
+  color: #1f2937;
+}
+
+/* Animações */
+@keyframes expandContent {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toggle-content.active .toggle-content-wrapper {
+  animation: expandContent 0.3s ease-out 0.1s both;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .toggle-header {
+    padding: 16px 20px;
+  }
+
+  .toggle-title {
+    font-size: 16px;
+    padding-right: 12px;
+  }
+
+  .toggle-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
+  .toggle-content-wrapper {
+    padding: 0 20px 20px 24px;
+    margin-left: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-widget {
+    margin: 16px;
+    border-radius: 8px;
+  }
+
+  .toggle-header {
+    padding: 14px 16px;
+  }
+
+  .toggle-title {
+    font-size: 15px;
+  }
+
+  .toggle-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
+
+  .toggle-content-wrapper {
+    padding: 0 16px 16px 20px;
+    margin-left: 12px;
+  }
+}

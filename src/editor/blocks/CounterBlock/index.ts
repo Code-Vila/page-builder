@@ -39,7 +39,7 @@ export const CounterComponent = (editor: any) => {
         script: function () {
           // Script que será executado quando o componente for renderizado
           const initCounter = () => {
-            const widget = this as HTMLElement;
+            const widget = this as unknown as HTMLElement;
             const buttons = widget.querySelectorAll(".counter-btn");
             const valueElement = widget.querySelector(
               ".counter-value"
@@ -126,7 +126,7 @@ export const CounterComponent = (editor: any) => {
 
       onRender() {
         // Garantir que o CSS seja aplicado
-        this.el.classList.add("counter-widget");
+        (this as any).el.classList.add("counter-widget");
       },
     },
   });
