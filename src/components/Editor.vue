@@ -218,16 +218,26 @@
           <!-- Controles de Dispositivo e Configurações -->
           <div class="flex items-center space-x-3">
             <!-- Seletor de Dispositivo -->
-            <div class="flex items-center bg-gray-750 rounded-lg p-1">
+            <div class="flex items-center bg-gray-750 rounded-lg p-1 relative">
+              <div
+                :class="[
+                  'absolute left-1 top-1 bottom-1 w-2 rounded-sm transition-all duration-200',
+                  selectedDevice === 'Desktop'
+                    ? 'bg-green-500'
+                    : selectedDevice === 'Tablet'
+                    ? 'bg-blue-500'
+                    : 'bg-purple-500',
+                ]"
+              ></div>
               <select
                 v-model="selectedDevice"
                 @change="changeDevice"
-                class="bg-transparent border-none text-white text-sm font-medium px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                class="bg-transparent border-none text-white text-sm font-medium px-3 py-2 pl-5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                 title="Selecionar dispositivo"
               >
-                <option value="desktop" class="bg-gray-800">🖥️ Desktop</option>
-                <option value="tablet" class="bg-gray-800">📱 Tablet</option>
-                <option value="mobile" class="bg-gray-800">📱 Mobile</option>
+                <option value="Desktop" class="bg-gray-800">🖥️ Desktop</option>
+                <option value="Tablet" class="bg-gray-800">📱 Tablet</option>
+                <option value="Mobile" class="bg-gray-800">📱 Mobile</option>
               </select>
             </div>
 
@@ -327,22 +337,32 @@
 
       <!-- Área do canvas com régua -->
       <div
-        class="gjs-canvas-container flex-1 relative flex items-center justify-center p-4 bg-gray-900"
+        class="gjs-canvas-container flex-1 relative flex items-center justify-center bg-gray-900"
       >
-        <!-- Réguas de medida -->
+        <div id="gjs" class="h-full w-full"></div>
+
+        <!-- Réguas de medida (posicionadas sobre o canvas) -->
         <div
           v-if="rulersEnabled"
-          class="rulers-container absolute inset-0 pointer-events-none z-10"
+          class="rulers-container absolute inset-0 pointer-events-none z-50"
         >
+          <!-- Régua horizontal -->
           <div
-            class="horizontal-ruler absolute top-0 left-0 right-0 h-6 bg-gray-800 bg-opacity-80 border-b border-gray-700"
+            class="horizontal-ruler absolute top-0 left-8 right-0 h-8 bg-gray-800 bg-opacity-95 border-b-2 border-gray-500 shadow-lg"
           ></div>
-          <div
-            class="vertical-ruler absolute left-0 top-0 bottom-0 w-6 bg-gray-800 bg-opacity-80 border-r border-gray-700"
-          ></div>
-        </div>
 
-        <div id="gjs" class="h-full w-full"></div>
+          <!-- Régua vertical -->
+          <div
+            class="vertical-ruler absolute left-0 top-8 bottom-0 w-8 bg-gray-800 bg-opacity-95 border-r-2 border-gray-500 shadow-lg"
+          ></div>
+
+          <!-- Canto superior esquerdo -->
+          <div
+            class="absolute top-0 left-0 w-8 h-8 bg-gray-800 bg-opacity-95 border-r-2 border-b-2 border-gray-500 flex items-center justify-center shadow-lg z-50"
+          >
+            <span class="text-xs text-gray-300 font-medium">cm</span>
+          </div>
+        </div>
       </div>
 
       <!-- Painel lateral direito -->
@@ -553,7 +573,7 @@ import { setupGrapesEditor } from "../editor/index";
 // Estado do componente
 const editor = ref<Editor | null>(null);
 const isSaving = ref(false);
-const selectedDevice = ref("desktop");
+const selectedDevice = ref("Desktop");
 const showCodeViewer = ref(false);
 const rulersEnabled = ref(false);
 const previewMode = ref(false);
@@ -679,22 +699,30 @@ const editorConfig = {
       {
         name: "Desktop",
         width: "",
+        id: "desktop-device",
       },
       {
         name: "Tablet",
         width: "768px",
-        widthMedia: "992px",
+        widthMedia: "1024px",
+        id: "tablet-device",
       },
       {
         name: "Mobile",
-        width: "320px",
-        widthMedia: "575px",
+        width: "375px",
+        widthMedia: "767px",
+        id: "mobile-device",
       },
     ],
   },
 
   // Habilitar réguas e guias
   canvasCss: `
+    :root {
+      --gjs-primary-color: #111827;
+      --gjs-secondary-color: #374151;
+      --gjs-tertiary-color: #4b5563;
+    }
     .gjs-rulers {
       background-color: rgba(30, 41, 59, 0.8);
       border-color: #374151;
@@ -708,6 +736,9 @@ const editorConfig = {
       left: 0;
       width: 25px;
       border-right: 1px solid #374151;
+    }
+    .gjs-one-bg, .gjs-primary-color {
+      background-color: #111827 !important;
     }
   `,
 
@@ -911,9 +942,104 @@ const previewPage = () => {
 const changeDevice = () => {
   if (!editor.value) return;
 
-  // Por enquanto, apenas altera o estado visual
-  // A implementação completa da mudança de dispositivo pode ser adicionada depois
-  console.log(`Dispositivo alterado para: ${selectedDevice.value}`);
+  console.log(`📱 Iniciando mudança para: ${selectedDevice.value}`);
+
+  try {
+    const editorInstance = editor.value as any;
+
+    // Método 1: runCommand do GrapesJS
+    if (editorInstance.runCommand) {
+      editorInstance.runCommand("set-device", { name: selectedDevice.value });
+      console.log("✅ Comando set-device executado");
+    }
+
+    // Método 2: Device Manager diretamente
+    const deviceManager = editorInstance.DeviceManager;
+    if (deviceManager) {
+      const devices = deviceManager.getAll();
+      const targetDevice = devices.find(
+        (d: any) => d.get("name") === selectedDevice.value
+      );
+
+      if (targetDevice) {
+        deviceManager.select(targetDevice);
+        console.log("✅ Dispositivo selecionado via DeviceManager");
+      } else {
+        console.warn("⚠️ Dispositivo não encontrado:", selectedDevice.value);
+      }
+    }
+
+    // Método 3: Atualizar manualmente canvas e frame
+    forceCanvasUpdate();
+
+    // Método 4: Refresh e triggers
+    setTimeout(() => {
+      if (editorInstance.refresh) {
+        editorInstance.refresh();
+      }
+
+      if (editorInstance.trigger) {
+        editorInstance.trigger("canvas:update");
+        editorInstance.trigger("canvas:render");
+      }
+
+      console.log("✅ Refresh e atualizações executados");
+    }, 150);
+
+    showNotification(`Canvas alterado para ${selectedDevice.value}`, "success");
+    console.log(`✅ Dispositivo ${selectedDevice.value} processado`);
+  } catch (error) {
+    console.error("❌ Erro ao alterar dispositivo:", error);
+    showNotification(`Erro ao alterar para ${selectedDevice.value}`, "error");
+  }
+};
+
+const forceCanvasUpdate = () => {
+  try {
+    console.log("🔧 Forçando atualização manual do canvas...");
+
+    const canvas = document.querySelector(".gjs-cv-canvas") as HTMLElement;
+    const frame = document.querySelector(".gjs-frame") as HTMLElement;
+
+    if (canvas && frame) {
+      // Atualizar classes e atributos
+      canvas.setAttribute("data-device", selectedDevice.value);
+      canvas.className = canvas.className.replace(/gjs-device-\w+/g, "");
+      canvas.classList.add(`gjs-device-${selectedDevice.value.toLowerCase()}`);
+
+      // Aplicar estilos diretamente no frame
+      frame.style.transition = "all 0.3s ease-in-out";
+
+      if (selectedDevice.value === "Desktop") {
+        frame.style.maxWidth = "calc(100% - 40px)";
+        frame.style.width = "calc(100% - 40px)";
+        frame.style.borderColor = "#10b981";
+        frame.style.boxShadow = "0 10px 25px rgba(16, 185, 129, 0.3)";
+      } else if (selectedDevice.value === "Tablet") {
+        frame.style.maxWidth = "768px";
+        frame.style.width = "768px";
+        frame.style.borderColor = "#3b82f6";
+        frame.style.boxShadow = "0 10px 25px rgba(59, 130, 246, 0.3)";
+      } else if (selectedDevice.value === "Mobile") {
+        frame.style.maxWidth = "375px";
+        frame.style.width = "375px";
+        frame.style.borderColor = "#8b5cf6";
+        frame.style.boxShadow = "0 10px 25px rgba(139, 92, 246, 0.3)";
+      }
+
+      frame.style.borderWidth = "3px";
+      frame.style.borderStyle = "solid";
+
+      console.log(
+        `✅ Estilos aplicados manualmente para ${selectedDevice.value}`
+      );
+      console.log(`📏 Largura definida: ${frame.style.width}`);
+    } else {
+      console.warn("⚠️ Canvas ou frame não encontrados");
+    }
+  } catch (error) {
+    console.error("❌ Erro na atualização manual:", error);
+  }
 };
 
 const toggleFullscreen = () => {
@@ -984,6 +1110,84 @@ onMounted(() => {
     // Configurar editor personalizado com blocos e componentes
     setupGrapesEditor(editor.value);
 
+    // Debug dos dispositivos disponíveis
+    setTimeout(() => {
+      const deviceManager = (editor.value as any).DeviceManager;
+      if (deviceManager) {
+        console.log("🔧 Device Manager disponível:", deviceManager);
+        const devices = deviceManager.getAll();
+        console.log(
+          "📱 Dispositivos disponíveis:",
+          devices.map((d: any) => d.get("name"))
+        );
+
+        // Definir dispositivo inicial
+        deviceManager.select("Desktop");
+        console.log("🖥️ Dispositivo Desktop selecionado inicialmente");
+
+        // Teste automático completo para debug
+        setTimeout(() => {
+          console.log("🧪 INICIANDO TESTE COMPLETO DE DISPOSITIVOS");
+
+          // Teste 1: Tablet
+          console.log("📱 Teste 1: Mudando para Tablet");
+          selectedDevice.value = "Tablet";
+          changeDevice();
+
+          setTimeout(() => {
+            const frame = document.querySelector(".gjs-frame") as HTMLElement;
+            if (frame) {
+              console.log(
+                "📏 Largura do frame após Tablet:",
+                frame.style.width
+              );
+              console.log(
+                "🖼️ Largura computada:",
+                getComputedStyle(frame).width
+              );
+            }
+
+            // Teste 2: Mobile
+            console.log("📱 Teste 2: Mudando para Mobile");
+            selectedDevice.value = "Mobile";
+            changeDevice();
+
+            setTimeout(() => {
+              if (frame) {
+                console.log(
+                  "📏 Largura do frame após Mobile:",
+                  frame.style.width
+                );
+                console.log(
+                  "🖼️ Largura computada:",
+                  getComputedStyle(frame).width
+                );
+              }
+
+              // Teste 3: Voltar para Desktop
+              setTimeout(() => {
+                console.log("📱 Teste 3: Voltando para Desktop");
+                selectedDevice.value = "Desktop";
+                changeDevice();
+
+                setTimeout(() => {
+                  if (frame) {
+                    console.log(
+                      "📏 Largura final do frame:",
+                      frame.style.width
+                    );
+                    console.log("✅ Teste automático concluído");
+                  }
+                }, 1000);
+              }, 2000);
+            }, 2000);
+          }, 2000);
+        }, 5000);
+      } else {
+        console.error("❌ Device Manager não encontrado!");
+      }
+    }, 200);
+
     // Forçar remoção de painéis automáticos após inicialização
     setTimeout(() => {
       // Remover painéis automáticos do DOM
@@ -1022,22 +1226,28 @@ onMounted(() => {
     // Configurar comandos para dispositivos
     editor.value.Commands.add("set-device-desktop", {
       run: () => {
+        selectedDevice.value = "Desktop";
+        const deviceManager = (editor.value as any).DeviceManager;
+        deviceManager.select("Desktop");
         console.log("Setting desktop device");
-        // Implementação futura para dispositivos
       },
     });
 
     editor.value.Commands.add("set-device-tablet", {
       run: () => {
+        selectedDevice.value = "Tablet";
+        const deviceManager = (editor.value as any).DeviceManager;
+        deviceManager.select("Tablet");
         console.log("Setting tablet device");
-        // Implementação futura para dispositivos
       },
     });
 
     editor.value.Commands.add("set-device-mobile", {
       run: () => {
+        selectedDevice.value = "Mobile";
+        const deviceManager = (editor.value as any).DeviceManager;
+        deviceManager.select("Mobile");
         console.log("Setting mobile device");
-        // Implementação futura para dispositivos
       },
     });
 
@@ -1066,6 +1276,23 @@ onMounted(() => {
       console.log("Componente adicionado:", component);
     });
 
+    // Debug eventos de dispositivos
+    editor.value.on("device:add", (device: any) => {
+      console.log("🔧 Dispositivo adicionado:", device.get("name"));
+    });
+
+    editor.value.on("device:select", (device: any) => {
+      console.log("📱 Dispositivo selecionado:", device.get("name"));
+      const canvas = document.querySelector(".gjs-cv-canvas");
+      if (canvas) {
+        canvas.setAttribute("data-device", device.get("name"));
+      }
+    });
+
+    editor.value.on("device:update", (device: any) => {
+      console.log("🔄 Dispositivo atualizado:", device.get("name"));
+    });
+
     // Controlar placeholder do Style Manager (removido)
     editor.value.on("component:selected", (component: any) => {
       // Capturar informações do elemento selecionado
@@ -1080,6 +1307,15 @@ onMounted(() => {
     editor.value.on("component:deselected", () => {
       // Limpar informações do elemento
       selectedElementInfo.value = null;
+    });
+
+    // Sincronizar estado do dispositivo quando alterado
+    editor.value.on("device:select", (device: any) => {
+      const deviceName = device.get("name");
+      if (deviceName !== selectedDevice.value) {
+        selectedDevice.value = deviceName;
+        console.log(`Dispositivo sincronizado: ${deviceName}`);
+      }
     });
 
     // Adicionar hotkeys
@@ -1124,24 +1360,97 @@ onMounted(() => {
 
 /* Estilos para as réguas */
 .rulers-container {
-  background-image: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.1) 1px,
-      transparent 1px
-    ),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background: transparent;
 }
 
-.horizontal-ruler,
-.vertical-ruler {
-  background-image: linear-gradient(
+.horizontal-ruler {
+  background-color: rgba(31, 41, 59, 0.95);
+  background-image: 
+    /* Marcações principais a cada cm (37.795px ≈ 1cm) */ repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.2) 1px,
-      transparent 1px
+      transparent,
+      transparent 55.795px,
+      #f3f4f6 55.795px,
+      #f3f4f6 39.795px
     ),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 10px 10px;
+    /* Marcações médias a cada 5mm */
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 18.8975px,
+        #d1d5db 18.8975px,
+        #d1d5db 8.8975px
+      ),
+    /* Marcações pequenas a cada mm */
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3.7795px,
+        #9ca3af 3.7795px,
+        #9ca3af 4.7795px
+      );
+  position: relative;
+  backdrop-filter: blur(2px);
+}
+
+.horizontal-ruler::after {
+  content: "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30";
+  position: absolute;
+  bottom: 2px;
+  left: 8px;
+  font-size: 11px;
+  color: #f3f4f6;
+  font-weight: 500;
+  letter-spacing: 26px;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.vertical-ruler {
+  background-color: rgba(31, 41, 59, 0.95);
+  background-image: 
+    /* Marcações principais a cada cm */ repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 37.795px,
+      #f3f4f6 37.795px,
+      #f3f4f6 39.795px
+    ),
+    /* Marcações médias a cada 5mm */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 18.8975px,
+        #d1d5db 18.8975px,
+        #d1d5db 20.8975px
+      ),
+    /* Marcações pequenas a cada mm */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3.7795px,
+        #9ca3af 3.7795px,
+        #9ca3af 4.7795px
+      );
+  position: relative;
+  backdrop-filter: blur(2px);
+}
+
+.vertical-ruler::after {
+  content: "0\\A 1\\A 2\\A 3\\A 4\\A 5\\A 6\\A 7\\A 8\\A 9\\A 10\\A 11\\A 12\\A 13\\A 14\\A 15\\A 16\\A 17\\A 18\\A 19\\A 20";
+  position: absolute;
+  right: 2px;
+  top: 8px;
+  font-size: 11px;
+  color: #f3f4f6;
+  font-weight: 500;
+  line-height: 37.795px;
+  white-space: pre;
+  pointer-events: none;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Estilos para o visualizador de código */
@@ -1223,11 +1532,20 @@ code {
 }
 
 /* Forçar o canvas a ocupar toda a área disponível */
+:deep(.gjs-editor-cont) {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 :deep(.gjs-cv-canvas) {
   width: 100% !important;
   height: 100% !important;
+  flex: 1 !important;
   margin: 0 !important;
   padding: 0 !important;
+  background: #111827 !important;
 }
 
 :deep(.gjs-cv-canvas-c) {
@@ -1235,6 +1553,7 @@ code {
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  background: #111827 !important;
 }
 
 :deep(.gjs-frame-wrapper) {
@@ -1244,8 +1563,9 @@ code {
   justify-content: center !important;
   align-items: center !important;
   margin: 0 !important;
-  padding: 20px !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
+  background: #1f2937 !important;
 }
 
 :deep(.gjs-frame) {
@@ -1257,6 +1577,8 @@ code {
   width: calc(100% - 40px) !important;
   height: calc(100% - 40px) !important;
   min-height: 500px !important;
+  margin-top: 0px !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 /* Remover qualquer margem ou padding extra do GrapesJS */
@@ -1265,6 +1587,51 @@ code {
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  background: #111827 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+:deep(#gjs > *) {
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+/* Sobrescrever a cor primária do GrapesJS para o tema do projeto */
+:deep(.gjs-one-bg) {
+  background-color: #1f2937 !important; /* Usar a cor de fundo do projeto */
+}
+
+/* Outras cores primárias do GrapesJS que podem aparecer */
+:deep(.gjs-primary-color) {
+  background-color: #111827 !important;
+}
+
+:deep([style*="background-color: var(--gjs-primary-color)"]) {
+  background-color: #111827 !important;
+}
+
+/* Remover espaçamentos extras que podem causar a barra cinza */
+:deep(.gjs-cv-canvas__frames) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #111827 !important;
+}
+
+:deep(.gjs-cv-canvas__frame) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #111827 !important;
+}
+
+/* Forçar elementos específicos do canvas a ocupar toda altura */
+:deep(.gjs-cv-canvas.gjs-no-touch-actions.gjs-cv-canvas-bg) {
+  height: 100% !important;
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #111827 !important;
 }
 
 :deep(.gjs-sm-sector) {
@@ -1292,17 +1659,6 @@ code {
 
 :deep(.gjs-layer:hover) {
   background: #374151 !important;
-}
-
-/* Estilos para as réguas */
-.rulers-container {
-  background-image: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.1) 1px,
-      transparent 1px
-    ),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
 }
 
 /* Estilos customizados para a nova toolbar */
@@ -1510,5 +1866,117 @@ code {
 
 :deep(.gjs-clm-tags-btn:hover) {
   background: #047857 !important;
+}
+
+/* Melhorias para mudança de dispositivos */
+:deep(.gjs-cv-canvas) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+:deep(.gjs-frame-wrapper) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Estilos específicos para dispositivos - Mais visuais */
+:deep(.gjs-device-desktop .gjs-frame),
+:deep(.gjs-cv-canvas[data-device="Desktop"] .gjs-frame) {
+  max-width: calc(100% - 40px) !important;
+  width: calc(100% - 40px) !important;
+  border-color: #10b981 !important;
+  border-width: 3px !important;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
+}
+
+:deep(.gjs-device-tablet .gjs-frame),
+:deep(.gjs-cv-canvas[data-device="Tablet"] .gjs-frame) {
+  max-width: 768px !important;
+  width: 768px !important;
+  border-color: #3b82f6 !important;
+  border-width: 3px !important;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3) !important;
+}
+
+:deep(.gjs-device-mobile .gjs-frame),
+:deep(.gjs-cv-canvas[data-device="Mobile"] .gjs-frame) {
+  max-width: 375px !important;
+  width: 375px !important;
+  border-color: #8b5cf6 !important;
+  border-width: 3px !important;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Estilos para o container do canvas */
+:deep(.gjs-cv-canvas) {
+  transition: all 0.3s ease-in-out !important;
+}
+
+:deep(.gjs-frame) {
+  margin: 0 auto !important;
+  transition: all 0.3s ease-in-out !important;
+  border-style: solid !important;
+  border-radius: 8px !important;
+}
+
+/* Estilos para destacar quando está em modo tablet/mobile */
+:deep(.gjs-cv-canvas[data-device="Tablet"]) {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(59, 130, 246, 0.05)
+  ) !important;
+}
+
+:deep(.gjs-cv-canvas[data-device="Mobile"]) {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.1),
+    rgba(139, 92, 246, 0.05)
+  ) !important;
+}
+
+/* Indicador visual do dispositivo ativo */
+:deep(.gjs-cv-canvas[data-device="Desktop"]) {
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 185, 129, 0.05) 0%,
+    #111827 70%
+  ) !important;
+}
+
+:deep(.gjs-cv-canvas[data-device="Tablet"]) {
+  background: radial-gradient(
+    circle at center,
+    rgba(59, 130, 246, 0.05) 0%,
+    #111827 70%
+  ) !important;
+}
+
+:deep(.gjs-cv-canvas[data-device="Mobile"]) {
+  background: radial-gradient(
+    circle at center,
+    rgba(139, 92, 246, 0.05) 0%,
+    #111827 70%
+  ) !important;
+}
+
+/* Melhorar seletor de dispositivos */
+.editor-toolbar select {
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.editor-toolbar select:focus {
+  transform: scale(1.02) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+}
+
+.editor-toolbar select option {
+  transition: all 0.2s ease !important;
+  padding: 8px 12px !important;
+}
+
+.editor-toolbar select option:hover {
+  background-color: #374151 !important;
 }
 </style>
