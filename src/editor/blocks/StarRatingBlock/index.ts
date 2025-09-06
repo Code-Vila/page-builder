@@ -48,22 +48,34 @@ export const StarRatingComponent = (editor: any) => {
           };
 
           stars.forEach((star, index) => {
-            star.addEventListener("click", () => {
-              updateRating(index + 1);
-            });
+            star.addEventListener(
+              "click",
+              () => {
+                updateRating(index + 1);
+              },
+              { passive: true }
+            );
 
-            star.addEventListener("mouseenter", () => {
+            star.addEventListener(
+              "mouseenter",
+              () => {
+                stars.forEach((s, i) => {
+                  s.classList.toggle("active", i <= index);
+                });
+              },
+              { passive: true }
+            );
+          });
+
+          widget.addEventListener(
+            "mouseleave",
+            () => {
               stars.forEach((s, i) => {
-                s.classList.toggle("active", i <= index);
+                s.classList.toggle("active", i < currentRating);
               });
-            });
-          });
-
-          widget.addEventListener("mouseleave", () => {
-            stars.forEach((s, i) => {
-              s.classList.toggle("active", i < currentRating);
-            });
-          });
+            },
+            { passive: true }
+          );
 
           // Inicializar estado
           updateRating(currentRating);

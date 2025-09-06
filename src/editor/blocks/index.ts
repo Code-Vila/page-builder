@@ -17,8 +17,6 @@ class SimpleBlockRegistry {
   private discoveredBlocks: AutoDiscoveredBlock[] = [];
 
   async discoverAndRegister(editor: any): Promise<void> {
-    console.log("🤖 Descobrindo e registrando blocos...");
-
     // Auto-descobrir usando Vite glob
     const blockModules = import.meta.glob("./*/index.ts");
 
@@ -41,24 +39,10 @@ class SimpleBlockRegistry {
           module,
           css,
         });
-
-        console.log(`✅ ${blockName} registrado${css ? " + CSS" : ""}`);
       } catch (error) {
-        console.error(`❌ Erro ao registrar bloco em ${path}:`, error);
+        // Silent error handling
       }
     }
-
-    console.log(`🎉 ${this.discoveredBlocks.length} blocos registrados!`);
-
-    // Debug: Listar todos os blocos no BlockManager
-    const allBlocks = editor.BlockManager.getAll();
-    console.log(
-      `📋 Blocos no BlockManager (${allBlocks.length}):`,
-      allBlocks.map((b: any) => ({
-        id: b.get("id"),
-        category: b.get("category"),
-      }))
-    );
   }
 
   private async registerBlock(
@@ -73,11 +57,6 @@ class SimpleBlockRegistry {
       Object.values(module).find((val: any) => val?.id);
     if (blockDef?.id) {
       editor.BlockManager.add(blockDef.id, blockDef);
-      console.log(
-        `📦 Bloco adicionado ao BlockManager: ${blockDef.id} (${
-          blockDef.category || "Sem categoria"
-        })`
-      );
     }
 
     // Componente interativo (CounterComponent, etc.)
@@ -86,7 +65,6 @@ class SimpleBlockRegistry {
     );
     if (componentKey) {
       module[componentKey](editor);
-      console.log(`🔧 Componente registrado: ${componentKey}`);
     }
 
     // Bloco complexo (função de auto-registro)
@@ -95,7 +73,6 @@ class SimpleBlockRegistry {
     );
     if (registerFunc && typeof registerFunc === "function") {
       (registerFunc as Function)(editor);
-      console.log(`⚙️ Função de registro executada: ${registerFunc.name}`);
     }
   }
 

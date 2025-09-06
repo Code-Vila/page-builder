@@ -1,6 +1,7 @@
 import "./style.css";
 import loopGridHTML from "./element.html?raw";
 import loopGridCSS from "./style.css?raw";
+import { addOptimizedListener } from "../../utils/eventUtils";
 
 export const LoopGridBlock = {
   id: "loop-grid",
@@ -41,9 +42,9 @@ export const LoopGridComponent = (editor: any) => {
           const filterBtns = widget.querySelectorAll(".filter-btn");
           const gridItems = widget.querySelectorAll(".grid-item");
 
-          // Filtros
+          // Filtros com listeners otimizados
           filterBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
+            addOptimizedListener(btn, "click", () => {
               const filter = btn.getAttribute("data-filter");
 
               // Atualizar botões ativos
@@ -65,22 +66,27 @@ export const LoopGridComponent = (editor: any) => {
             });
           });
 
-          // Botões de visualização
+          // Botões de visualização com listeners otimizados
           const viewBtns = widget.querySelectorAll(".view-btn");
           viewBtns.forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
+            addOptimizedListener(
+              btn,
+              "click",
+              (e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-              // Adicionar efeito de clique
-              (btn as HTMLElement).style.transform = "scale(0.95)";
-              setTimeout(() => {
-                (btn as HTMLElement).style.transform = "";
-              }, 150);
+                // Adicionar efeito de clique
+                (btn as HTMLElement).style.transform = "scale(0.95)";
+                setTimeout(() => {
+                  (btn as HTMLElement).style.transform = "";
+                }, 150);
 
-              // Aqui você pode adicionar lógica para abrir modal ou redirecionar
-              console.log("Ver detalhes do item");
-            });
+                // Aqui você pode adicionar lógica para abrir modal ou redirecionar
+                console.log("Ver detalhes do item");
+              },
+              { passive: false }
+            ); // Precisa de preventDefault
           });
 
           // Paginação (básica)
@@ -98,14 +104,14 @@ export const LoopGridComponent = (editor: any) => {
           const totalPages = 3;
 
           if (prevBtn && nextBtn && paginationInfo) {
-            prevBtn.addEventListener("click", () => {
+            addOptimizedListener(prevBtn, "click", () => {
               if (currentPage > 1) {
                 currentPage--;
                 updatePagination();
               }
             });
 
-            nextBtn.addEventListener("click", () => {
+            addOptimizedListener(nextBtn, "click", () => {
               if (currentPage < totalPages) {
                 currentPage++;
                 updatePagination();

@@ -35,41 +35,45 @@ export const AccordionComponent = (editor: any) => {
           const headers = widget.querySelectorAll(".accordion-header");
 
           headers.forEach((header) => {
-            header.addEventListener("click", () => {
-              const target = header.getAttribute("data-target");
-              const content = widget.querySelector(
-                `[data-section="${target}"]`
-              );
-              const icon = header.querySelector(".accordion-icon");
+            header.addEventListener(
+              "click",
+              () => {
+                const target = header.getAttribute("data-target");
+                const content = widget.querySelector(
+                  `[data-section="${target}"]`
+                );
+                const icon = header.querySelector(".accordion-icon");
 
-              // Fechar todos os outros
-              headers.forEach((h) => {
-                if (h !== header) {
-                  h.classList.remove("active");
-                  const otherTarget = h.getAttribute("data-target");
-                  const otherContent = widget.querySelector(
-                    `[data-section="${otherTarget}"]`
-                  );
-                  const otherIcon = h.querySelector(".accordion-icon");
+                // Fechar todos os outros
+                headers.forEach((h) => {
+                  if (h !== header) {
+                    h.classList.remove("active");
+                    const otherTarget = h.getAttribute("data-target");
+                    const otherContent = widget.querySelector(
+                      `[data-section="${otherTarget}"]`
+                    );
+                    const otherIcon = h.querySelector(".accordion-icon");
 
-                  if (otherContent) otherContent.classList.remove("active");
-                  if (otherIcon) otherIcon.textContent = "+";
+                    if (otherContent) otherContent.classList.remove("active");
+                    if (otherIcon) otherIcon.textContent = "+";
+                  }
+                });
+
+                // Toggle atual
+                const isActive = header.classList.contains("active");
+
+                if (isActive) {
+                  header.classList.remove("active");
+                  if (content) content.classList.remove("active");
+                  if (icon) icon.textContent = "+";
+                } else {
+                  header.classList.add("active");
+                  if (content) content.classList.add("active");
+                  if (icon) icon.textContent = "−";
                 }
-              });
-
-              // Toggle atual
-              const isActive = header.classList.contains("active");
-
-              if (isActive) {
-                header.classList.remove("active");
-                if (content) content.classList.remove("active");
-                if (icon) icon.textContent = "+";
-              } else {
-                header.classList.add("active");
-                if (content) content.classList.add("active");
-                if (icon) icon.textContent = "−";
-              }
-            });
+              },
+              { passive: true }
+            );
           });
         },
       },

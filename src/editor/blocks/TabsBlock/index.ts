@@ -38,26 +38,30 @@ export const TabsComponent = (editor: any) => {
           const tabPanes = widget.querySelectorAll(".tab-pane");
 
           tabButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-              const targetTab = button.getAttribute("data-tab");
+            button.addEventListener(
+              "click",
+              () => {
+                const targetTab = button.getAttribute("data-tab");
 
-              // Remover active de todos os botões
-              tabButtons.forEach((btn) => btn.classList.remove("active"));
+                // Remover active de todos os botões
+                tabButtons.forEach((btn) => btn.classList.remove("active"));
 
-              // Remover active de todos os painéis
-              tabPanes.forEach((pane) => pane.classList.remove("active"));
+                // Remover active de todos os painéis
+                tabPanes.forEach((pane) => pane.classList.remove("active"));
 
-              // Adicionar active ao botão clicado
-              button.classList.add("active");
+                // Adicionar active ao botão clicado
+                button.classList.add("active");
 
-              // Adicionar active ao painel correspondente
-              const targetPane = widget.querySelector(
-                `[data-content="${targetTab}"]`
-              );
-              if (targetPane) {
-                targetPane.classList.add("active");
-              }
-            });
+                // Adicionar active ao painel correspondente
+                const targetPane = widget.querySelector(
+                  `[data-content="${targetTab}"]`
+                );
+                if (targetPane) {
+                  targetPane.classList.add("active");
+                }
+              },
+              { passive: true }
+            );
           });
         },
       },

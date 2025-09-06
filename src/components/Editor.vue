@@ -306,14 +306,36 @@
         <div class="gjs-panel-tabs border-b border-gray-700">
           <div class="flex">
             <button
-              class="gjs-tab-blocks flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500"
+              class="gjs-tab-blocks flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2"
+              :class="
+                leftActiveTab === 'blocks'
+                  ? 'border-blue-500 text-white'
+                  : 'border-transparent'
+              "
               data-tab="blocks"
               @click="switchLeftTab('blocks')"
             >
               Blocos
             </button>
             <button
-              class="gjs-tab-layers flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-transparent"
+              class="gjs-tab-templates flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2"
+              :class="
+                leftActiveTab === 'templates'
+                  ? 'border-blue-500 text-white'
+                  : 'border-transparent'
+              "
+              data-tab="templates"
+              @click="switchLeftTab('templates')"
+            >
+              Templates
+            </button>
+            <button
+              class="gjs-tab-layers flex-1 p-3 text-sm font-medium text-gray-300 hover:text-white border-b-2"
+              :class="
+                leftActiveTab === 'layers'
+                  ? 'border-blue-500 text-white'
+                  : 'border-transparent'
+              "
               data-tab="layers"
               @click="switchLeftTab('layers')"
             >
@@ -325,12 +347,83 @@
         <!-- Conteúdo dos painéis -->
         <div class="gjs-panel-content h-full overflow-y-auto">
           <!-- Painel de blocos -->
-          <div id="blocks-container" class="gjs-blocks-container p-3"></div>
+          <div
+            id="blocks-container"
+            class="gjs-blocks-container p-3"
+            :style="{ display: leftActiveTab === 'blocks' ? 'block' : 'none' }"
+          ></div>
+
+          <!-- Painel de templates -->
+          <div
+            id="templates-container"
+            class="gjs-templates-container p-3"
+            :style="{
+              display: leftActiveTab === 'templates' ? 'block' : 'none',
+            }"
+          >
+            <div
+              v-if="!templates.length"
+              class="text-gray-400 text-center py-8"
+            >
+              <div class="text-4xl mb-2">📄</div>
+              Carregando templates...
+            </div>
+
+            <div v-else>
+              <div
+                v-for="category in templateCategories"
+                :key="category"
+                class="mb-6"
+              >
+                <h3
+                  class="text-gray-300 font-medium mb-3 text-sm uppercase tracking-wide"
+                >
+                  {{ category }}
+                </h3>
+
+                <div class="grid grid-cols-1 gap-3">
+                  <div
+                    v-for="template in getTemplatesByCategory(category)"
+                    :key="template.id"
+                    class="template-item bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600 hover:border-blue-500"
+                    @click="applyTemplate(template.id)"
+                  >
+                    <div class="flex items-start space-x-3">
+                      <div
+                        class="template-thumbnail w-12 h-12 bg-gray-600 rounded flex items-center justify-content flex-shrink-0"
+                      >
+                        <img
+                          v-if="template.thumbnail"
+                          :src="template.thumbnail"
+                          :alt="template.label"
+                          class="w-full h-full object-cover rounded"
+                        />
+                        <span v-else class="text-gray-400 text-xl">📄</span>
+                      </div>
+
+                      <div class="flex-1 min-w-0">
+                        <h4 class="text-white font-medium text-sm mb-1">
+                          {{ template.label }}
+                        </h4>
+                        <p
+                          class="text-gray-400 text-xs leading-relaxed"
+                          v-if="template.description"
+                        >
+                          {{ template.description }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Painel de camadas -->
           <div
             id="layers-container"
             class="gjs-layers-container p-3"
-            style="display: none"
+            :style="{ display: leftActiveTab === 'layers' ? 'block' : 'none' }"
           ></div>
         </div>
       </div>
@@ -562,13 +655,64 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, nextTick } from "vue";
+import { onMounted, onBeforeUnmount, reactive, ref, nextTick } from "vue";
 import grapesjs from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import type { Editor } from "grapesjs";
 
 // Importar configuração do editor
 import { setupGrapesEditor } from "../editor/index";
+import {
+  templateRegistry,
+  applyTemplate as applyTemplateUtil,
+} from "../editor/templates";
+import {
+  optimizeGrapesJSPerformance,
+  setupEventThrottling,
+} from "../editor/utils/performanceUtils";
+
+// Gerenciador de Event Listeners otimizado
+class EventListenerManager {
+  private listeners: Array<{
+    element: Element | Document;
+    event: string;
+    handler: EventListener;
+    options?: AddEventListenerOptions;
+  }> = [];
+
+  add(
+    element: Element | Document,
+    event: string,
+    handler: EventListener,
+    options?: AddEventListenerOptions
+  ) {
+    const optimizedOptions = {
+      passive: true,
+      ...options,
+    };
+
+    element.addEventListener(event, handler, optimizedOptions);
+    this.listeners.push({ element, event, handler, options: optimizedOptions });
+  }
+
+  removeAll() {
+    this.listeners.forEach(({ element, event, handler, options }) => {
+      element.removeEventListener(event, handler, options as any);
+    });
+    this.listeners = [];
+  }
+
+  remove(element: Element | Document, event: string, handler: EventListener) {
+    const index = this.listeners.findIndex(
+      (l) => l.element === element && l.event === event && l.handler === handler
+    );
+    if (index !== -1) {
+      const listener = this.listeners[index];
+      element.removeEventListener(event, handler, listener.options as any);
+      this.listeners.splice(index, 1);
+    }
+  }
+}
 
 // Estado do componente
 const editor = ref<Editor | null>(null);
@@ -581,7 +725,14 @@ const showSettingsMenu = ref(false);
 const selectedElementInfo = ref<{ type: string; classes: string } | null>(null);
 const generatedHTML = ref("");
 const generatedCSS = ref("");
+const eventManager = new EventListenerManager();
 const generatedJS = ref("");
+
+// Estado das abas e templates
+const leftActiveTab = ref("blocks");
+const templates = ref<any[]>([]);
+const templateCategories = ref<string[]>([]);
+const isApplyingTemplate = ref(false);
 
 // Sistema de notificações
 const notification = reactive({
@@ -1047,27 +1198,60 @@ const toggleFullscreen = () => {
 };
 
 const switchLeftTab = (tab: string) => {
-  const blocksContainer = document.getElementById("blocks-container");
-  const layersContainer = document.getElementById("layers-container");
-  const blocksTab = document.querySelector(".gjs-tab-blocks");
-  const layersTab = document.querySelector(".gjs-tab-layers");
+  leftActiveTab.value = tab;
+};
 
-  if (blocksContainer && layersContainer && blocksTab && layersTab) {
-    if (tab === "blocks") {
-      blocksContainer.style.display = "block";
-      layersContainer.style.display = "none";
-      blocksTab.classList.add("border-blue-500", "text-white");
-      blocksTab.classList.remove("border-transparent", "text-gray-300");
-      layersTab.classList.remove("border-blue-500", "text-white");
-      layersTab.classList.add("border-transparent", "text-gray-300");
-    } else {
-      blocksContainer.style.display = "none";
-      layersContainer.style.display = "block";
-      layersTab.classList.add("border-blue-500", "text-white");
-      layersTab.classList.remove("border-transparent", "text-gray-300");
-      blocksTab.classList.remove("border-blue-500", "text-white");
-      blocksTab.classList.add("border-transparent", "text-gray-300");
-    }
+// Funções para gerenciar templates
+const loadTemplates = async () => {
+  try {
+    const allTemplates = templateRegistry.getAllTemplates();
+    templates.value = allTemplates;
+    templateCategories.value = templateRegistry.getCategories();
+  } catch (error) {
+    // Error handling silently
+  }
+};
+
+const getTemplatesByCategory = (category: string) => {
+  return templates.value.filter((template) => template.category === category);
+};
+
+// No seu componente Vue
+const applyTemplate = async (templateId: string) => {
+  if (!editor.value || isApplyingTemplate.value) return;
+
+  const confirmApply = confirm(
+    "Aplicar este template irá substituir todo o conteúdo atual. Deseja continuar?"
+  );
+
+  if (!confirmApply) return;
+
+  try {
+    isApplyingTemplate.value = true;
+    showNotification("Aplicando template...");
+
+    // Desabilitar UI
+    const templateButtons = document.querySelectorAll(".template-item");
+    templateButtons.forEach((btn) => {
+      (btn as HTMLElement).style.pointerEvents = "none";
+      (btn as HTMLElement).style.opacity = "0.5";
+    });
+
+    // TESTE: Usar versão minimal para evitar erro "element is not removable"
+    templateRegistry.applyTemplateMinimal(editor.value, templateId);
+
+    showNotification("Template aplicado com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao aplicar template:", error);
+    showNotification("Erro ao aplicar template", "error");
+  } finally {
+    // Reabilitar UI
+    isApplyingTemplate.value = false;
+    const templateButtons = document.querySelectorAll(".template-item");
+    templateButtons.forEach((btn) => {
+      (btn as HTMLElement).style.pointerEvents = "auto";
+      (btn as HTMLElement).style.opacity = "1";
+    });
   }
 };
 
@@ -1100,75 +1284,83 @@ const switchRightTab = (tab: string) => {
 onMounted(async () => {
   console.log("🚀 Inicializando GrapesJS Editor...");
 
+  // Otimizar performance antes de inicializar o editor
+  optimizeGrapesJSPerformance();
+  setupEventThrottling();
+
   await nextTick(async () => {
     editor.value = grapesjs.init(editorConfig);
 
     // Configurar editor personalizado com blocos e componentes
     await setupGrapesEditor(editor.value);
+    // Carregar templates
+    await loadTemplates();
 
-    // Diagnóstico detalhado dos blocos no painel
-    setTimeout(() => {
-      console.log("🔍 DIAGNÓSTICO DO PAINEL DE BLOCOS");
+    // Configurar comandos personalizados
+    // setTimeout(() => {
+    //   console.log("🔍 DIAGNÓSTICO DO PAINEL DE BLOCOS");
+    //   // ... resto do código de diagnóstico comentado
+    // }, 2000);
 
-      if (!editor.value) return;
+    // if (!editor.value) return;
 
-      const blockManager = editor.value.BlockManager;
-      const allBlocks = blockManager.getAll();
+    // const blockManager = editor.value.BlockManager;
+    // const allBlocks = blockManager.getAll();
 
-      console.log(`📊 Total de blocos registrados: ${allBlocks.length}`);
+    // console.log(`📊 Total de blocos registrados: ${allBlocks.length}`);
 
-      // Listar blocos por categoria
-      const categorias: Record<string, any[]> = {};
-      allBlocks.forEach((block: any) => {
-        const categoria = block.get("category") || "Sem categoria";
-        if (!categorias[categoria]) {
-          categorias[categoria] = [];
-        }
-        categorias[categoria].push({
-          id: block.get("id"),
-          label: block.get("label"),
-          visible: block.get("select") !== false,
-        });
-      });
+    // Listar blocos por categoria
+    // const categorias: Record<string, any[]> = {};
+    // allBlocks.forEach((block: any) => {
+    // const categoria = block.get("category") || "Sem categoria";
+    // if (!categorias[categoria]) {
+    // categorias[categoria] = [];
+    // }
+    // categorias[categoria].push({
+    // id: block.get("id"),
+    // label: block.get("label"),
+    // visible: block.get("select") !== false,
+    // });
+    // });
 
-      console.log("📂 Blocos por categoria:");
-      Object.entries(categorias).forEach(([categoria, blocos]) => {
-        console.log(`\n🗂️ ${categoria} (${blocos.length} blocos):`);
-        blocos.forEach((bloco: any) => {
-          const status = bloco.visible ? "✅" : "❌";
-          console.log(`  ${status} ${bloco.id} - "${bloco.label}"`);
-        });
-      });
+    // console.log("📂 Blocos por categoria:");
+    // Object.entries(categorias).forEach(([categoria, blocos]) => {
+    // console.log(`\n🗂️ ${categoria} (${blocos.length} blocos):`);
+    // blocos.forEach((bloco: any) => {
+    // const status = bloco.visible ? "✅" : "❌";
+    // console.log(`  ${status} ${bloco.id} - "${bloco.label}"`);
+    // });
+    // });
 
-      // Verificar se há blocos ocultos
-      const blocosOcultos = allBlocks.filter(
-        (block: any) => block.get("select") === false
-      );
-      if (blocosOcultos.length > 0) {
-        console.log(
-          `\n⚠️ ${blocosOcultos.length} blocos estão marcados como ocultos`
-        );
-      }
+    // Verificar se há blocos ocultos
+    // const blocosOcultos = allBlocks.filter(
+    // (block: any) => block.get("select") === false
+    // );
+    // if (blocosOcultos.length > 0) {
+    // console.log(
+    // `\n⚠️ ${blocosOcultos.length} blocos estão marcados como ocultos`
+    // );
+    //   }
 
-      // Verificar elementos DOM do painel
-      console.log("\n� Verificando elementos DOM do painel:");
-      const blocksPanel = document.querySelector(".gjs-blocks-cs");
-      if (blocksPanel) {
-        console.log("✅ Painel de blocos encontrado no DOM");
-        const blockElements = blocksPanel.querySelectorAll(".gjs-block");
-        console.log(
-          `📦 Elementos de bloco visíveis no DOM: ${blockElements.length}`
-        );
+    // Verificar elementos DOM do painel
+    //   console.log("\n� Verificando elementos DOM do painel:");
+    //   const blocksPanel = document.querySelector(".gjs-blocks-cs");
+    //   if (blocksPanel) {
+    //     console.log("✅ Painel de blocos encontrado no DOM");
+    //     const blockElements = blocksPanel.querySelectorAll(".gjs-block");
+    //     // console.log(
+    //     //   `📦 Elementos de bloco visíveis no DOM: ${blockElements.length}`
+    //     // );
 
-        if (blockElements.length < allBlocks.length) {
-          console.log(
-            `⚠️ Discrepância: ${allBlocks.length} blocos registrados vs ${blockElements.length} visíveis`
-          );
-        }
-      } else {
-        console.log("❌ Painel de blocos não encontrado no DOM");
-      }
-    }, 2000);
+    //     if (blockElements.length < allBlocks.length) {
+    //       console.log(
+    //         `⚠️ Discrepância: ${allBlocks.length} blocos registrados vs ${blockElements.length} visíveis`
+    //       );
+    //     }
+    //   } else {
+    //     console.log("❌ Painel de blocos não encontrado no DOM");
+    //   }
+    // }, 2000);
 
     // Debug dos dispositivos disponíveis
     // setTimeout(() => {
@@ -1279,7 +1471,6 @@ onMounted(async () => {
     editor.value.Commands.add("toggle-rulers", {
       run: () => {
         // Implementação futura para rulers
-        console.log("Toggling rulers");
       },
     });
 
@@ -1318,31 +1509,21 @@ onMounted(async () => {
     const traitsTab = document.querySelector(".gjs-tab-traits");
 
     if (blocksTab && layersTab) {
-      blocksTab.addEventListener("click", () => switchLeftTab("blocks"));
-      layersTab.addEventListener("click", () => switchLeftTab("layers"));
+      eventManager.add(blocksTab, "click", () => switchLeftTab("blocks"));
+      eventManager.add(layersTab, "click", () => switchLeftTab("layers"));
     }
 
     if (stylesTab && traitsTab) {
-      stylesTab.addEventListener("click", () => switchRightTab("styles"));
-      traitsTab.addEventListener("click", () => switchRightTab("traits"));
+      eventManager.add(stylesTab, "click", () => switchRightTab("styles"));
+      eventManager.add(traitsTab, "click", () => switchRightTab("traits"));
     }
 
-    // Configurar eventos para melhor debug
-    editor.value.on("block:add", (block: any) => {
-      console.log("Bloco adicionado:", block);
-    });
-
-    editor.value.on("component:add", (component: any) => {
-      console.log("Componente adicionado:", component);
-    });
-
     // Debug eventos de dispositivos
-    editor.value.on("device:add", (device: any) => {
-      console.log("🔧 Dispositivo adicionado:", device.get("name"));
+    editor.value.on("device:add", (_device: any) => {
+      // Device added silently
     });
 
     editor.value.on("device:select", (device: any) => {
-      console.log("📱 Dispositivo selecionado:", device.get("name"));
       const canvas = document.querySelector(".gjs-cv-canvas");
       if (canvas) {
         canvas.setAttribute("data-device", device.get("name"));
@@ -1378,28 +1559,29 @@ onMounted(async () => {
       }
     });
 
-    // Adicionar hotkeys
-    document.addEventListener("keydown", (e) => {
+    // Adicionar hotkeys com gerenciador otimizado
+    eventManager.add(document, "keydown", (e) => {
+      const keyEvent = e as KeyboardEvent;
       // Esc para fechar modais
-      if (e.key === "Escape") {
+      if (keyEvent.key === "Escape") {
         if (showCodeViewer.value) {
           toggleCodeViewer();
         }
         return;
       }
 
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
+      if (keyEvent.ctrlKey || keyEvent.metaKey) {
+        switch (keyEvent.key) {
           case "s":
-            e.preventDefault();
+            keyEvent.preventDefault();
             savePage();
             break;
           case "e":
-            e.preventDefault();
+            keyEvent.preventDefault();
             exportHTML();
             break;
           case "p":
-            e.preventDefault();
+            keyEvent.preventDefault();
             previewPage();
             break;
           case "/":
@@ -1412,6 +1594,12 @@ onMounted(async () => {
 
     console.log("✅ Editor inicializado com sucesso!");
   });
+});
+
+// Limpeza dos event listeners
+onBeforeUnmount(() => {
+  eventManager.removeAll();
+  console.log("🧹 Event listeners removidos");
 });
 </script>
 
