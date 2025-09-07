@@ -362,11 +362,17 @@
             }"
           >
             <div
-              v-if="!templates.length"
+              v-if="
+                !templatesReady || !getTemplatesByCategory('Templates').length
+              "
               class="text-gray-400 text-center py-8"
             >
               <div class="text-4xl mb-2">📄</div>
-              Carregando templates...
+              {{
+                !templatesReady
+                  ? "Carregando templates..."
+                  : "Nenhum template encontrado"
+              }}
             </div>
 
             <div v-else>
@@ -384,32 +390,24 @@
                 <div class="grid grid-cols-1 gap-3">
                   <div
                     v-for="template in getTemplatesByCategory(category)"
-                    :key="template.id"
+                    :key="template.get('id')"
                     class="template-item bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600 hover:border-blue-500"
-                    @click="applyTemplate(template.id)"
+                    :draggable="true"
+                    @dragstart="handleTemplateDragStart($event, template)"
+                    @dragend="handleTemplateDragEnd($event)"
                   >
                     <div class="flex items-start space-x-3">
                       <div
-                        class="template-thumbnail w-12 h-12 bg-gray-600 rounded flex items-center justify-content flex-shrink-0"
-                      >
-                        <img
-                          v-if="template.thumbnail"
-                          :src="template.thumbnail"
-                          :alt="template.label"
-                          class="w-full h-full object-cover rounded"
-                        />
-                        <span v-else class="text-gray-400 text-xl">📄</span>
-                      </div>
+                        class="template-thumbnail w-12 h-12 bg-gray-600 rounded flex items-center justify-center flex-shrink-0"
+                        v-html="template.get('media')"
+                      ></div>
 
                       <div class="flex-1 min-w-0">
                         <h4 class="text-white font-medium text-sm mb-1">
-                          {{ template.label }}
+                          {{ template.get("label") }}
                         </h4>
-                        <p
-                          class="text-gray-400 text-xs leading-relaxed"
-                          v-if="template.description"
-                        >
-                          {{ template.description }}
+                        <p class="text-gray-400 text-xs leading-relaxed">
+                          Arraste para o canvas para usar
                         </p>
                       </div>
                     </div>
@@ -663,10 +661,6 @@ import type { Editor } from "grapesjs";
 // Importar configuração do editor
 import { setupGrapesEditor } from "../editor/index";
 import {
-  templateRegistry,
-  applyTemplate as applyTemplateUtil,
-} from "../editor/templates";
-import {
   optimizeGrapesJSPerformance,
   setupEventThrottling,
 } from "../editor/utils/performanceUtils";
@@ -728,11 +722,8 @@ const generatedCSS = ref("");
 const eventManager = new EventListenerManager();
 const generatedJS = ref("");
 
-// Estado das abas e templates
+// Estado das abas
 const leftActiveTab = ref("blocks");
-const templates = ref<any[]>([]);
-const templateCategories = ref<string[]>([]);
-const isApplyingTemplate = ref(false);
 
 // Sistema de notificações
 const notification = reactive({
@@ -750,13 +741,24 @@ const editorConfig = {
   avoidInlineStyle: false,
   storageManager: false,
 
+  // Configurações para evitar travamentos
+  noticeOnUnload: false,
+  clearOnRender: true,
+  showOffsets: false, // Desabilitar offsets que podem causar problemas
+  showDevices: false,
+
   // Configuração dos blocos
   blockManager: {
     appendTo: "#blocks-container",
+    // Garantir que o drag & drop funcione
+    drag: true,
+    drop: true,
   },
 
   // Configuração do canvas
   canvas: {
+    // Garantir que o drop funcione
+    drop: true,
     styles: [
       `
       * {
@@ -774,8 +776,32 @@ const editorConfig = {
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
+      
+      /* Estilos para drag & drop */
+      .drag-over {
+        border: 2px dashed #3b82f6 !important;
+        background-color: rgba(59, 130, 246, 0.1) !important;
+      }
+      
+      .template-item {
+        transition: all 0.2s ease;
+      }
+      
+      .template-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
       `,
     ],
+  },
+
+  // Configuração do DomComponents para evitar travamentos
+  domComponents: {
+    // Configurações para evitar problemas de performance
+    avoidInlineStyle: false,
+    forceClass: false,
+    // Desabilitar algumas funcionalidades que podem causar travamento
+    customLoading: false,
   },
 
   // Configuração do gerenciador de estilo
@@ -893,18 +919,10 @@ const editorConfig = {
     }
   `,
 
-  // Configurações para melhor experiência
-  showOffsets: true,
-  showDevices: false, // Desabilitar exibição automática de dispositivos
-
   // Desabilitar painéis automáticos
   panels: {
     defaults: [],
   },
-
-  // Configurações adicionais para evitar painéis automáticos
-  noticeOnUnload: false,
-  clearOnRender: true,
 };
 
 // Novos métodos
@@ -1119,20 +1137,6 @@ const changeDevice = () => {
     // Método 3: Atualizar manualmente canvas e frame
     forceCanvasUpdate();
 
-    // Método 4: Refresh e triggers
-    // setTimeout(() => {
-    //   if (editorInstance.refresh) {
-    //     editorInstance.refresh();
-    //   }
-
-    //   if (editorInstance.trigger) {
-    //     editorInstance.trigger("canvas:update");
-    //     editorInstance.trigger("canvas:render");
-    //   }
-
-    //   console.log("✅ Refresh e atualizações executados");
-    // }, 150);
-
     // showNotification(`Canvas alterado para ${selectedDevice.value}`, "success");
     console.log(`✅ Dispositivo ${selectedDevice.value} processado`);
   } catch (error) {
@@ -1201,76 +1205,143 @@ const switchLeftTab = (tab: string) => {
   leftActiveTab.value = tab;
 };
 
-// Funções para gerenciar templates
-const loadTemplates = async () => {
-  try {
-    const allTemplates = templateRegistry.getAllTemplates();
-    templates.value = allTemplates;
-    templateCategories.value = templateRegistry.getCategories();
-  } catch (error) {
-    // Error handling silently
+// Funções para gerenciar templates (agora são blocos)
+const getTemplatesByCategory = (_category: string) => {
+  if (!editor.value || !templatesReady.value) {
+    return [];
+  }
+  const blockManager = editor.value.BlockManager;
+  const allBlocks = blockManager.getAll();
+
+  const templates = allBlocks.filter((block: any) => {
+    const category = block.get("category").id;
+    // Verificar se é um objeto com id "Templates" ou string "Templates"
+    return category === "Templates";
+  });
+
+  return templates;
+};
+
+// Computed para obter categorias de templates
+const templateCategories = ref(["Templates"]);
+const templatesReady = ref(false);
+
+// Função para ocultar a categoria Templates da aba Blocos
+const filterTemplatesFromBlocks = (editor: any) => {
+  if (!editor) return;
+
+  // Buscar o container de blocos
+  const blocksContainer = document.querySelector(".gjs-blocks-cs");
+  if (!blocksContainer) {
+    return;
+  }
+
+  // Buscar a categoria Templates - tentar diferentes seletores
+  let templatesCategory = blocksContainer.querySelector(
+    '[data-title="Templates"]'
+  );
+
+  // Se não encontrou, tentar buscar pelo texto "Templates"
+  if (!templatesCategory) {
+    const allCategories = blocksContainer.querySelectorAll(
+      ".gjs-block-category"
+    );
+    console.log(`🔍 Encontradas ${allCategories.length} categorias:`);
+
+    allCategories.forEach((category: any, index: number) => {
+      const titleEl = category.querySelector(".gjs-title");
+      const titleText = titleEl?.textContent?.trim();
+    });
+
+    templatesCategory =
+      Array.from(allCategories).find((category: any) => {
+        const titleEl = category.querySelector(".gjs-title");
+        return titleEl && titleEl.textContent?.trim() === "Templates";
+      }) || null;
+  }
+
+  if (templatesCategory) {
+    const categoryEl = templatesCategory as HTMLElement;
+    categoryEl.style.display = "none";
+    categoryEl.style.visibility = "hidden";
+    categoryEl.style.position = "absolute";
+    categoryEl.style.left = "-9999px";
+    categoryEl.style.opacity = "0";
+    categoryEl.style.pointerEvents = "none";
+  } else {
+    console.log("❌ Categoria Templates não encontrada");
   }
 };
 
-const getTemplatesByCategory = (category: string) => {
-  return templates.value.filter((template) => template.category === category);
-};
-
-// No seu componente Vue
-// const applyTemplate = async (templateId: string) => {
-//   if (!editor.value || isApplyingTemplate.value) return;
-
-//   const confirmApply = confirm(
-//     "Aplicar este template irá substituir todo o conteúdo atual. Deseja continuar?"
-//   );
-
-//   if (!confirmApply) return;
-
-//   try {
-//     isApplyingTemplate.value = true;
-//     showNotification("Aplicando template...");
-
-//     // Desabilitar UI
-//     const templateButtons = document.querySelectorAll(".template-item");
-//     templateButtons.forEach((btn) => {
-//       (btn as HTMLElement).style.pointerEvents = "none";
-//       (btn as HTMLElement).style.opacity = "0.5";
-//     });
-
-//     // Usar a versão SIMPLE (mais confiável)
-//     templateRegistry.applyTemplateUltraSimple(editor.value, templateId);
-
-//     showNotification("Template aplicado com sucesso!", "success");
-//   } catch (error) {
-//     console.error("Erro ao aplicar template:", error);
-//     showNotification("Erro ao aplicar template", "error");
-//   } finally {
-//     // Reabilitar UI
-//     isApplyingTemplate.value = false;
-//     const templateButtons = document.querySelectorAll(".template-item");
-//     templateButtons.forEach((btn) => {
-//       (btn as HTMLElement).style.pointerEvents = "auto";
-//       (btn as HTMLElement).style.opacity = "1";
-//     });
-//   }
-// };
-
-const applyTemplate = async (templateId: string) => {
+// Funções para drag & drop de templates
+const handleTemplateDragStart = (event: DragEvent, template: any) => {
   if (!editor.value) return;
 
-  try {
-    isApplyingTemplate.value = true;
-
-    // TESTE: Usar método simples e controlado
-    templateRegistry.applyTemplateSimple(editor.value, templateId);
-
-    showNotification("Template adicionado com sucesso!", "success");
-  } catch (error) {
-    console.error("Erro ao aplicar template:", error);
-    showNotification("Erro ao aplicar template", "error");
-  } finally {
-    isApplyingTemplate.value = false;
+  // Armazenar dados do template no evento de drag
+  if (event.dataTransfer) {
+    event.dataTransfer.setData("text/plain", template.get("content"));
+    event.dataTransfer.effectAllowed = "copy";
   }
+
+  // Adicionar classe visual para feedback
+  const target = event.target as HTMLElement;
+  if (target) {
+    target.classList.add("opacity-50", "scale-95");
+  }
+};
+
+const handleTemplateDragEnd = (event: DragEvent) => {
+  // Remover classes visuais
+  const target = event.target as HTMLElement;
+  if (target) {
+    target.classList.remove("opacity-50", "scale-95");
+  }
+};
+
+// Configurar drag & drop no canvas
+const setupCanvasDragDrop = (editor: any) => {
+  if (!editor) return;
+
+  const canvas = editor.Canvas.getElement();
+  if (!canvas) return;
+
+  // Event listener para dragover (necessário para permitir drop)
+  canvas.addEventListener("dragover", (event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = "copy";
+
+    // Adicionar feedback visual
+    canvas.classList.add("drag-over");
+  });
+
+  // Event listener para dragleave
+  canvas.addEventListener("dragleave", () => {
+    // Remover feedback visual
+    canvas.classList.remove("drag-over");
+  });
+
+  // Event listener para drop
+  canvas.addEventListener("drop", (event: DragEvent) => {
+    event.preventDefault();
+    canvas.classList.remove("drag-over");
+
+    const content = event.dataTransfer?.getData("text/plain");
+    if (!content) return;
+
+    // Adicionar o template ao canvas
+    try {
+      editor.addComponent(content);
+    } catch (error) {
+      // Fallback: usar append se addComponent falhar
+      try {
+        const rootComponent = editor.DomComponents.getWrapper();
+        rootComponent.append(content);
+      } catch (error2) {
+        // Último recurso: usar setComponents
+        editor.setComponents(content);
+      }
+    }
+  });
 };
 
 const switchRightTab = (tab: string) => {
@@ -1311,152 +1382,27 @@ onMounted(async () => {
 
     // Configurar editor personalizado com blocos e componentes
     await setupGrapesEditor(editor.value);
-    // Carregar templates
-    await loadTemplates();
 
-    // Configurar comandos personalizados
-    // setTimeout(() => {
-    //   console.log("🔍 DIAGNÓSTICO DO PAINEL DE BLOCOS");
-    //   // ... resto do código de diagnóstico comentado
-    // }, 2000);
+    // Aguardar um pouco para garantir que tudo foi carregado
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // if (!editor.value) return;
+    // Marcar templates como prontos
+    templatesReady.value = true;
 
-    // const blockManager = editor.value.BlockManager;
-    // const allBlocks = blockManager.getAll();
+    // Configurar drag & drop no canvas
+    setupCanvasDragDrop(editor.value);
 
-    // console.log(`📊 Total de blocos registrados: ${allBlocks.length}`);
+    // Filtrar blocos após o carregamento
+    setTimeout(() => {
+      filterTemplatesFromBlocks(editor.value);
+    }, 500);
 
-    // Listar blocos por categoria
-    // const categorias: Record<string, any[]> = {};
-    // allBlocks.forEach((block: any) => {
-    // const categoria = block.get("category") || "Sem categoria";
-    // if (!categorias[categoria]) {
-    // categorias[categoria] = [];
-    // }
-    // categorias[categoria].push({
-    // id: block.get("id"),
-    // label: block.get("label"),
-    // visible: block.get("select") !== false,
+    // Adicionar listener para filtrar blocos quando novos são adicionados
+    // editor.value.on("block:add", () => {
+    //   setTimeout(() => {
+    //     filterTemplatesFromBlocks(editor.value);
+    //   }, 100);
     // });
-    // });
-
-    // console.log("📂 Blocos por categoria:");
-    // Object.entries(categorias).forEach(([categoria, blocos]) => {
-    // console.log(`\n🗂️ ${categoria} (${blocos.length} blocos):`);
-    // blocos.forEach((bloco: any) => {
-    // const status = bloco.visible ? "✅" : "❌";
-    // console.log(`  ${status} ${bloco.id} - "${bloco.label}"`);
-    // });
-    // });
-
-    // Verificar se há blocos ocultos
-    // const blocosOcultos = allBlocks.filter(
-    // (block: any) => block.get("select") === false
-    // );
-    // if (blocosOcultos.length > 0) {
-    // console.log(
-    // `\n⚠️ ${blocosOcultos.length} blocos estão marcados como ocultos`
-    // );
-    //   }
-
-    // Verificar elementos DOM do painel
-    //   console.log("\n� Verificando elementos DOM do painel:");
-    //   const blocksPanel = document.querySelector(".gjs-blocks-cs");
-    //   if (blocksPanel) {
-    //     console.log("✅ Painel de blocos encontrado no DOM");
-    //     const blockElements = blocksPanel.querySelectorAll(".gjs-block");
-    //     // console.log(
-    //     //   `📦 Elementos de bloco visíveis no DOM: ${blockElements.length}`
-    //     // );
-
-    //     if (blockElements.length < allBlocks.length) {
-    //       console.log(
-    //         `⚠️ Discrepância: ${allBlocks.length} blocos registrados vs ${blockElements.length} visíveis`
-    //       );
-    //     }
-    //   } else {
-    //     console.log("❌ Painel de blocos não encontrado no DOM");
-    //   }
-    // }, 2000);
-
-    // Debug dos dispositivos disponíveis
-    // setTimeout(() => {
-    //   const deviceManager = (editor.value as any).DeviceManager;
-    //   if (deviceManager) {
-    //     console.log("🔧 Device Manager disponível:", deviceManager);
-    //     const devices = deviceManager.getAll();
-    //     console.log(
-    //       "📱 Dispositivos disponíveis:",
-    //       devices.map((d: any) => d.get("name"))
-    //     );
-
-    //     // Definir dispositivo inicial
-    //     deviceManager.select("Desktop");
-    //     console.log("🖥️ Dispositivo Desktop selecionado inicialmente");
-
-    //     // Teste automático completo para debug
-    //     setTimeout(() => {
-    //       console.log("🧪 INICIANDO TESTE COMPLETO DE DISPOSITIVOS");
-
-    //       // Teste 1: Tablet
-    //       console.log("📱 Teste 1: Mudando para Tablet");
-    //       selectedDevice.value = "Tablet";
-    //       changeDevice();
-
-    //       setTimeout(() => {
-    //         const frame = document.querySelector(".gjs-frame") as HTMLElement;
-    //         if (frame) {
-    //           console.log(
-    //             "📏 Largura do frame após Tablet:",
-    //             frame.style.width
-    //           );
-    //           console.log(
-    //             "🖼️ Largura computada:",
-    //             getComputedStyle(frame).width
-    //           );
-    //         }
-
-    //         // Teste 2: Mobile
-    //         console.log("📱 Teste 2: Mudando para Mobile");
-    //         selectedDevice.value = "Mobile";
-    //         changeDevice();
-
-    //         setTimeout(() => {
-    //           if (frame) {
-    //             console.log(
-    //               "📏 Largura do frame após Mobile:",
-    //               frame.style.width
-    //             );
-    //             console.log(
-    //               "🖼️ Largura computada:",
-    //               getComputedStyle(frame).width
-    //             );
-    //           }
-
-    //           // Teste 3: Voltar para Desktop
-    //           setTimeout(() => {
-    //             console.log("📱 Teste 3: Voltando para Desktop");
-    //             selectedDevice.value = "Desktop";
-    //             changeDevice();
-
-    //             setTimeout(() => {
-    //               if (frame) {
-    //                 console.log(
-    //                   "📏 Largura final do frame:",
-    //                   frame.style.width
-    //                 );
-    //                 console.log("✅ Teste automático concluído");
-    //               }
-    //             }, 1000);
-    //           }, 2000);
-    //         }, 2000);
-    //       }, 2000);
-    //     }, 5000);
-    //   } else {
-    //     console.error("❌ Device Manager não encontrado!");
-    //   }
-    // }, 200);
 
     // Forçar remoção de painéis automáticos após inicialização
     setTimeout(() => {
