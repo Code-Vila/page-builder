@@ -29,11 +29,26 @@ export const AnimatedHeadlineComponent = (editor: any) => {
         tagName: "div",
         classes: ["animated-headline-widget"],
         content: animatedHeadlineHTML,
+        traits: [
+          {
+            type: 'text',
+            name: 'headline-static',
+            label: 'Texto Principal',
+            changeProp: 1,
+          },
+          {
+            type: 'text',
+            name: 'headline-subtitle',
+            label: 'Subtítulo',
+            changeProp: 1,
+          }
+        ],
 
         script: function () {
           const widget = this as unknown as HTMLElement;
+          if (!widget) return;
 
-          // Animação de palavras rotativas
+          // Animação simples de palavras rotativas
           const animatedWords = widget.querySelectorAll(".animated-word");
           let currentIndex = 0;
 
@@ -41,8 +56,8 @@ export const AnimatedHeadlineComponent = (editor: any) => {
             if (animatedWords.length === 0) return;
 
             // Remover classe active da palavra atual
-            animatedWords[currentIndex].classList.remove("active");
-            animatedWords[currentIndex].classList.add("exit");
+            animatedWords[currentIndex]?.classList.remove("active");
+            animatedWords[currentIndex]?.classList.add("exit");
 
             // Mover para a próxima palavra
             currentIndex = (currentIndex + 1) % animatedWords.length;
@@ -50,97 +65,32 @@ export const AnimatedHeadlineComponent = (editor: any) => {
             setTimeout(() => {
               // Remover classe exit de todas as palavras
               animatedWords.forEach((word) => word.classList.remove("exit"));
-
               // Adicionar classe active na nova palavra
-              animatedWords[currentIndex].classList.add("active");
+              animatedWords[currentIndex]?.classList.add("active");
             }, 300);
           }
 
-          // Iniciar rotação de palavras
-          const rotateInterval = setInterval(rotateWords, 3000);
+          // Iniciar rotação apenas se não estiver em modo de edição
+          let rotateInterval: NodeJS.Timeout | null = null;
+          
+          const startAnimation = () => {
+            if (rotateInterval) clearInterval(rotateInterval);
+            rotateInterval = setInterval(rotateWords, 3000);
+          };
 
-          // Animação de typewriter
-          const typewriterElement = widget.querySelector(
-            ".typewriter-text"
-          ) as HTMLElement;
-          const typewriterText =
-            typewriterElement?.getAttribute("data-typewriter") || "";
-          const cursor = widget.querySelector(
-            ".typewriter-cursor"
-          ) as HTMLElement;
+          // Verificar se está em modo de edição
+          const isEditing = widget.closest('.gjs-frame') !== null;
+          
+          if (!isEditing) {
+            startAnimation();
+          }
 
-          if (typewriterElement && typewriterText) {
-            let charIndex = 0;
-            typewriterElement.textContent = "";
-
-            function typeWriter() {
-              if (charIndex < typewriterText.length) {
-                typewriterElement.textContent +=
-                  typewriterText.charAt(charIndex);
-                charIndex++;
-                setTimeout(typeWriter, 50);
-              } else {
-                // Adicionar cursor no final
-                if (cursor) {
-                  typewriterElement.appendChild(cursor);
-                }
-              }
+          // Cleanup
+          return () => {
+            if (rotateInterval) {
+              clearInterval(rotateInterval);
             }
-
-            // Iniciar typewriter após um delay
-            setTimeout(typeWriter, 1000);
-          }
-
-          // Animação de destaque dos itens
-          const highlightItems = widget.querySelectorAll(".highlight-item");
-
-          function animateHighlights() {
-            highlightItems.forEach((item, index) => {
-              setTimeout(() => {
-                item.classList.add("animate");
-              }, index * 200);
-            });
-          }
-
-          // Iniciar animação dos highlights
-          setTimeout(animateHighlights, 2000);
-
-          // Intersection Observer para reativar animações quando visível
-          const observer = new IntersectionObserver(
-            (entries) => {
-              entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                  // Reiniciar animações quando o elemento fica visível
-                  const highlights =
-                    entry.target.querySelectorAll(".highlight-item");
-                  highlights.forEach((item, index) => {
-                    setTimeout(() => {
-                      item.classList.add("animate");
-                    }, index * 100);
-                  });
-                }
-              });
-            },
-            { threshold: 0.3 }
-          );
-
-          observer.observe(widget);
-
-          // Cleanup quando o componente é removido
-          const mutationObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              mutation.removedNodes.forEach((node) => {
-                if (node === widget) {
-                  clearInterval(rotateInterval);
-                  observer.disconnect();
-                }
-              });
-            });
-          });
-
-          if (widget.parentNode) {
-            mutationObserver.observe(widget.parentNode, { childList: true });
-          }
+          };
         },
       },
     },

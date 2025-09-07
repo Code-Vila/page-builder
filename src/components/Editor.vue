@@ -765,16 +765,25 @@ const editorConfig = {
         box-sizing: border-box;
       }
       body {
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: #1f2937;
         color: #f3f4f6;
       }
+      
+      /* Remover paddings indesejados do canvas */
       .gjs-frame {
+        margin: 0 !important;
+        padding: 0 !important;
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .gjs-frame body {
+        margin: 0 !important;
+        padding: 0 !important;
       }
       
       /* Estilos para drag & drop */
@@ -900,6 +909,11 @@ const editorConfig = {
       --gjs-secondary-color: #374151;
       --gjs-tertiary-color: #4b5563;
     }
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
     .gjs-rulers {
       background-color: rgba(30, 41, 59, 0.8);
       border-color: #374151;
@@ -1089,7 +1103,7 @@ const previewPage = () => {
     <title>Preview da Página</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { margin: 0 !important; padding: 0 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         ${css}
     </style>
 </head>
@@ -1248,9 +1262,9 @@ const filterTemplatesFromBlocks = (editor: any) => {
     );
     console.log(`🔍 Encontradas ${allCategories.length} categorias:`);
 
-    allCategories.forEach((category: any, index: number) => {
+    allCategories.forEach((category: any) => {
       const titleEl = category.querySelector(".gjs-title");
-      const titleText = titleEl?.textContent?.trim();
+      titleEl?.textContent?.trim();
     });
 
     templatesCategory =
@@ -1568,8 +1582,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Estilos existentes... */
-
 /* Estilos para as réguas */
 .rulers-container {
   background: transparent;

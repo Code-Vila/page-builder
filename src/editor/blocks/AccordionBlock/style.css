@@ -17,6 +17,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Esconder o checkbox */
+.accordion-toggle {
+  display: none;
+}
+
 .accordion-header {
   display: flex;
   justify-content: space-between;
@@ -26,15 +31,11 @@
   cursor: pointer;
   transition: all 0.3s ease;
   user-select: none;
+  margin: 0;
 }
 
 .accordion-header:hover {
   background: #f3f4f6;
-}
-
-.accordion-header.active {
-  background: #3b82f6;
-  color: white;
 }
 
 .accordion-header h3 {
@@ -49,10 +50,6 @@
   transition: transform 0.3s ease;
 }
 
-.accordion-header.active .accordion-icon {
-  transform: rotate(45deg);
-}
-
 .accordion-content {
   max-height: 0;
   overflow: hidden;
@@ -60,13 +57,46 @@
   background: white;
 }
 
-.accordion-content.active {
-  max-height: 200px;
-}
-
 .accordion-content p {
   padding: 20px;
   margin: 0;
   color: #374151;
   line-height: 1.6;
+}
+
+/* Estados do accordion usando CSS puro */
+.accordion-toggle:checked + .accordion-header {
+  background: #3b82f6;
+  color: white;
+}
+
+.accordion-toggle:checked + .accordion-header .accordion-icon {
+  transform: rotate(45deg);
+}
+
+.accordion-toggle:checked + .accordion-header + .accordion-content {
+  max-height: 200px;
+}
+
+/* Garantir que funcione durante a edição */
+.accordion-header {
+  pointer-events: auto !important;
+  z-index: 10;
+}
+
+.accordion-toggle {
+  pointer-events: none;
+}
+
+/* Melhorar a interação durante a edição */
+.accordion-item {
+  position: relative;
+}
+
+.accordion-item:hover .accordion-header {
+  background: #f3f4f6;
+}
+
+.accordion-toggle:checked + .accordion-header:hover {
+  background: #2563eb;
 }

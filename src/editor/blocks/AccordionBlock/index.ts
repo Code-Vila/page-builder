@@ -29,52 +29,51 @@ export const AccordionComponent = (editor: any) => {
         tagName: "div",
         classes: ["accordion-widget"],
         content: accordionHTML,
-
+        traits: [],
         script: function () {
-          const widget = this as unknown as HTMLElement;
-          const headers = widget.querySelectorAll(".accordion-header");
+          // Função que funciona tanto na edição quanto no preview
+          const initAccordion = () => {
+            const widget = this as unknown as HTMLElement;
+            if (!widget) return;
 
-          headers.forEach((header) => {
-            header.addEventListener(
-              "click",
-              () => {
-                const target = header.getAttribute("data-target");
-                const content = widget.querySelector(
-                  `[data-section="${target}"]`
-                );
-                const icon = header.querySelector(".accordion-icon");
+            const headers = widget.querySelectorAll(".accordion-header");
 
-                // Fechar todos os outros
-                headers.forEach((h) => {
-                  if (h !== header) {
-                    h.classList.remove("active");
-                    const otherTarget = h.getAttribute("data-target");
-                    const otherContent = widget.querySelector(
-                      `[data-section="${otherTarget}"]`
-                    );
-                    const otherIcon = h.querySelector(".accordion-icon");
+            // Remover listeners anteriores para evitar duplicação
+            headers.forEach((header) => {
+              const newHeader = header.cloneNode(true);
+              header.parentNode?.replaceChild(newHeader, header);
+            });
 
-                    if (otherContent) otherContent.classList.remove("active");
-                    if (otherIcon) otherIcon.textContent = "+";
+            // Adicionar listeners aos novos elementos
+            const newHeaders = widget.querySelectorAll(".accordion-header");
+            newHeaders.forEach((header) => {
+              header.addEventListener(
+                "click",
+                (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const toggle =
+                    header.previousElementSibling as HTMLInputElement;
+                  if (toggle && toggle.type === "checkbox") {
+                    // Toggle do checkbox
+                    toggle.checked = !toggle.checked;
+
+                    // Disparar evento change para ativar CSS
+                    const changeEvent = new Event("change", { bubbles: true });
+                    toggle.dispatchEvent(changeEvent);
                   }
-                });
+                },
+                { passive: false }
+              );
+            });
+          };
 
-                // Toggle atual
-                const isActive = header.classList.contains("active");
+          // Inicializar imediatamente
+          initAccordion();
 
-                if (isActive) {
-                  header.classList.remove("active");
-                  if (content) content.classList.remove("active");
-                  if (icon) icon.textContent = "+";
-                } else {
-                  header.classList.add("active");
-                  if (content) content.classList.add("active");
-                  if (icon) icon.textContent = "−";
-                }
-              },
-              { passive: true }
-            );
-          });
+          // Re-inicializar quando o componente for renderizado
+          setTimeout(initAccordion, 100);
         },
       },
     },
