@@ -1,0 +1,34 @@
+.column1-widget {
+  width: 100%;
+  min-height: 120px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.column1-widget:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.column1-content {
+  width: 100%;
+  text-align: center;
+}
+
+.column1-content h3 {
+  margin: 0 0 10px 0;
+  color: #374151;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.column1-content p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}

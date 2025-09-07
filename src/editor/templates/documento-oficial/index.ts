@@ -1,11 +1,10 @@
-import type { TemplateDefinition } from "../index";
-import templateHTML from "./template.html?raw";
-import templateCSS from "./template.css?raw";
+import templateHTML from "./element.html?raw";
+import templateCSS from "./style.css?raw";
 
-const template: TemplateDefinition = {
+const documentoOficialTemplate = {
   id: "documento-oficial",
   label: "Documento Oficial",
-  category: "Documentos",
+  category: "Templates",
   description:
     "Template para declarações, certificados e documentos oficiais com papel timbrado",
   thumbnail: `data:image/svg+xml;base64,${btoa(`
@@ -22,7 +21,7 @@ const template: TemplateDefinition = {
     </svg>
   `)}`,
   content: templateHTML,
-  css: templateCSS,
 };
+export { templateCSS };
 
-export default template;
+export default documentoOficialTemplate;

@@ -56,7 +56,17 @@ class SimpleBlockRegistry {
       module[blockName] ||
       Object.values(module).find((val: any) => val?.id);
     if (blockDef?.id) {
-      editor.BlockManager.add(blockDef.id, blockDef);
+      // Filtrar blocos da categoria "Templates" - eles serão registrados pelo sistema de templates
+      const isTemplate =
+        (typeof blockDef.category === "string" &&
+          blockDef.category === "Templates") ||
+        (typeof blockDef.category === "object" &&
+          blockDef.category?.id === "Templates");
+
+      if (!isTemplate) {
+        editor.BlockManager.add(blockDef.id, blockDef);
+      } else {
+      }
     }
 
     // Componente interativo (CounterComponent, etc.)
@@ -106,6 +116,20 @@ class SimpleBlockRegistry {
       .map((block) => `/* ${block.name} */\n${block.css}`)
       .join("\n\n");
   }
+
+  // Função para obter apenas blocos que não são templates
+  getNonTemplateBlocks(editor: any): any[] {
+    const blockManager = editor.BlockManager;
+    const allBlocks = blockManager.getAll();
+    return allBlocks.filter((block: any) => {
+      const category = block.get("category");
+      // Verificar se é um objeto com id "Templates" ou string "Templates"
+      return !(
+        (typeof category === "object" && category?.id === "Templates") ||
+        (typeof category === "string" && category === "Templates")
+      );
+    });
+  }
 }
 
 // Instância única
@@ -123,6 +147,13 @@ export const setupBlocks = async (editor: any): Promise<void> => {
  */
 export const getAllBlocksCSS = (): string => {
   return registry.getAllCSS();
+};
+
+/**
+ * Função para obter apenas blocos que não são templates
+ */
+export const getNonTemplateBlocks = (editor: any): any[] => {
+  return registry.getNonTemplateBlocks(editor);
 };
 
 // Export padrão
