@@ -26,6 +26,8 @@ class SimpleBlockRegistry {
           path.match(/\.\/([^/]+)\/index\.ts$/)?.[1] || "unknown";
         const module = (await moduleLoader()) as any;
 
+        console.log(`Descoberto bloco: ${blockName}`, { path, module });
+
         // Registrar bloco baseado no tipo
         await this.registerBlock(editor, module, blockName);
 
@@ -40,7 +42,7 @@ class SimpleBlockRegistry {
           css,
         });
       } catch (error) {
-        // Silent error handling
+        console.error(`Erro ao processar bloco ${path}:`, error);
       }
     }
   }
@@ -50,11 +52,40 @@ class SimpleBlockRegistry {
     module: any,
     blockName: string
   ): Promise<void> {
+    console.log(`Registrando bloco: ${blockName}`, { module });
+
     // Bloco simples (SectionBlock, TextBlock, etc.)
-    const blockDef =
-      module.default ||
-      module[blockName] ||
-      Object.values(module).find((val: any) => val?.id);
+    let blockDef = null;
+
+    // Tentar diferentes formas de encontrar o bloco
+    if (module.default && module.default.id) {
+      blockDef = module.default;
+    } else if (module[blockName] && module[blockName].id) {
+      blockDef = module[blockName];
+    } else {
+      // Procurar por qualquer objeto que tenha um id (incluindo export const)
+      const possibleBlocks = Object.values(module).filter(
+        (val: any) => val && typeof val === "object" && val.id
+      );
+      if (possibleBlocks.length > 0) {
+        blockDef = possibleBlocks[0];
+      }
+    }
+
+    // Se ainda não encontrou, procurar por padrões específicos
+    if (!blockDef) {
+      // Procurar por export const BlockName
+      const blockNamePattern = new RegExp(`^${blockName}$`, "i");
+      const matchingKey = Object.keys(module).find(
+        (key) => blockNamePattern.test(key) && module[key] && module[key].id
+      );
+      if (matchingKey) {
+        blockDef = module[matchingKey];
+      }
+    }
+
+    console.log(`BlockDef encontrado para ${blockName}:`, blockDef);
+
     if (blockDef?.id) {
       // Filtrar blocos da categoria "Templates" - eles serão registrados pelo sistema de templates
       const isTemplate =
@@ -64,9 +95,22 @@ class SimpleBlockRegistry {
           blockDef.category?.id === "Templates");
 
       if (!isTemplate) {
-        editor.BlockManager.add(blockDef.id, blockDef);
+        console.log(
+          `Adicionando bloco ${blockName} ao BlockManager:`,
+          blockDef
+        );
+        try {
+          editor.BlockManager.add(blockDef.id, blockDef);
+          console.log(`✅ Bloco ${blockName} registrado com sucesso!`);
+        } catch (error) {
+          console.error(`❌ Erro ao registrar bloco ${blockName}:`, error);
+        }
       } else {
+        console.log(`Bloco ${blockName} é template, pulando...`);
       }
+    } else {
+      console.log(`❌ Nenhum blockDef encontrado para ${blockName}`);
+      console.log(`Módulo completo:`, module);
     }
 
     // Componente interativo (CounterComponent, etc.)
@@ -93,7 +137,12 @@ class SimpleBlockRegistry {
         key.toLowerCase().endsWith("css") && typeof module[key] === "string"
     );
 
-    return cssKeys.length > 0 ? module[cssKeys[0]] : "";
+    const css = cssKeys.length > 0 ? module[cssKeys[0]] : "";
+    console.log(`CSS extraído:`, {
+      cssKeys,
+      css: css.substring(0, 100) + "...",
+    });
+    return css;
   }
 
   private analyzeType(module: any): BlockConfig {
@@ -111,10 +160,18 @@ class SimpleBlockRegistry {
   }
 
   getAllCSS(): string {
-    return this.discoveredBlocks
-      .filter((block) => block.css)
+    const blocksWithCSS = this.discoveredBlocks.filter((block) => block.css);
+    console.log(
+      `Blocos com CSS encontrados: ${blocksWithCSS.length}`,
+      blocksWithCSS.map((b) => b.name)
+    );
+
+    const css = blocksWithCSS
       .map((block) => `/* ${block.name} */\n${block.css}`)
       .join("\n\n");
+
+    console.log(`CSS total gerado: ${css.length} caracteres`);
+    return css;
   }
 
   // Função para obter apenas blocos que não são templates

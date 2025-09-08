@@ -1,23 +1,20 @@
 import "./style.css";
 // Importar o HTML como string usando a sintaxe do Vite
-import buttonHTML from "./element.html?raw";
+import interactiveButtonHTML from "./element.html?raw";
 // Importar o CSS como string para injeção no canvas
-import buttonCSS from "./style.css?raw";
+import interactiveButtonCSS from "./style.css?raw";
 
 // Configuração do bloco
-export const ButtonBlock = {
-  id: "button",
-  label: "Botão",
-  category: "Básico",
+export const InteractiveButtonBlock = {
+  id: "interactive-button",
+  label: "Botão Interativo",
+  category: "Interativo",
   media: `
-    <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: #3b82f6;">
-      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-      <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-    </svg>
+    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">B</div>
   `,
   content: {
-    type: "custom-button",
-    content: buttonHTML,
+    type: "interactive-button",
+    content: interactiveButtonHTML,
     traits: [
       {
         type: "text",
@@ -89,6 +86,27 @@ export const ButtonBlock = {
       },
       {
         type: "text",
+        name: "scroll-target",
+        label: "ID da Seção (se tipo Scroll)",
+        placeholder: "#minha-secao",
+        changeProp: 1,
+      },
+      {
+        type: "text",
+        name: "modal-target",
+        label: "ID do Modal (se tipo Modal)",
+        placeholder: "#meu-modal",
+        changeProp: 1,
+      },
+      {
+        type: "text",
+        name: "copy-text",
+        label: "Texto para Copiar (se tipo Copy)",
+        placeholder: "Texto a ser copiado",
+        changeProp: 1,
+      },
+      {
+        type: "text",
         name: "onclick",
         label: "JavaScript Personalizado",
         placeholder: 'alert("Olá!")',
@@ -101,21 +119,53 @@ export const ButtonBlock = {
         changeProp: 1,
       },
       {
+        type: "checkbox",
+        name: "loading",
+        label: "Estado de Carregamento",
+        changeProp: 1,
+      },
+      {
+        type: "text",
+        name: "icon",
+        label: "Ícone (Font Awesome)",
+        placeholder: "fas fa-home",
+        changeProp: 1,
+      },
+      {
+        type: "select",
+        name: "icon-position",
+        label: "Posição do Ícone",
+        options: [
+          { value: "left", name: "Esquerda" },
+          { value: "right", name: "Direita" },
+          { value: "top", name: "Acima" },
+          { value: "bottom", name: "Abaixo" },
+        ],
+        changeProp: 1,
+      },
+      {
         type: "textarea",
         name: "custom-css",
         label: "CSS Personalizado",
         placeholder: ".minha-classe { color: red; }",
         changeProp: 1,
       },
+      {
+        type: "text",
+        name: "data-custom",
+        label: "Atributo Data",
+        placeholder: "valor-personalizado",
+        changeProp: 1,
+      },
     ],
   },
   attributes: {
-    class: "gjs-block-button",
-    title: "Arraste para adicionar um botão",
+    class: "gjs-block-interactive-button",
+    title: "Arraste para adicionar um botão interativo",
   },
 };
 
 // Exportar também o CSS para injeção no canvas
-export { buttonCSS };
+export { interactiveButtonCSS };
 
-export default ButtonBlock;
+export default InteractiveButtonBlock;

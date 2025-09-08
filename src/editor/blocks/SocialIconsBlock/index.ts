@@ -32,6 +32,43 @@ export const SocialIconsComponent = (editor: any) => {
         tagName: "div",
         classes: ["social-icons-widget"],
         content: socialIconsHTML,
+        traits: [
+          {
+            type: 'text',
+            name: 'facebook-url',
+            label: 'URL do Facebook',
+            placeholder: 'https://facebook.com/suapagina',
+            changeProp: 1,
+          },
+          {
+            type: 'text',
+            name: 'twitter-url',
+            label: 'URL do Twitter',
+            placeholder: 'https://twitter.com/seuusuario',
+            changeProp: 1,
+          },
+          {
+            type: 'text',
+            name: 'instagram-url',
+            label: 'URL do Instagram',
+            placeholder: 'https://instagram.com/seuusuario',
+            changeProp: 1,
+          },
+          {
+            type: 'text',
+            name: 'linkedin-url',
+            label: 'URL do LinkedIn',
+            placeholder: 'https://linkedin.com/in/seuusuario',
+            changeProp: 1,
+          },
+          {
+            type: 'text',
+            name: 'youtube-url',
+            label: 'URL do YouTube',
+            placeholder: 'https://youtube.com/c/seucanal',
+            changeProp: 1,
+          }
+        ],
 
         script: function () {
           const widget = this as unknown as HTMLElement;

@@ -1,0 +1,279 @@
+/* Bootstrap Table Block Styles */
+.bootstrap-table-widget {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.bootstrap-table-widget .table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bootstrap-table-widget .table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  vertical-align: top;
+  border-color: #dee2e6;
+}
+
+.bootstrap-table-widget .table > :not(caption) > * > * {
+  padding: 0.5rem 0.5rem;
+  background-color: var(--bs-table-bg);
+  border-bottom-width: 1px;
+  box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+
+.bootstrap-table-widget .table > tbody {
+  vertical-align: inherit;
+}
+
+.bootstrap-table-widget .table > thead {
+  vertical-align: bottom;
+}
+
+.bootstrap-table-widget .table > :not(:first-child) {
+  border-top: 2px solid currentColor;
+}
+
+.bootstrap-table-widget .table-striped > tbody > tr:nth-of-type(odd) > td,
+.bootstrap-table-widget .table-striped > tbody > tr:nth-of-type(odd) > th {
+  --bs-table-accent-bg: rgba(0, 0, 0, 0.05);
+  color: var(--bs-table-color);
+}
+
+.bootstrap-table-widget .table-hover > tbody > tr:hover > td,
+.bootstrap-table-widget .table-hover > tbody > tr:hover > th {
+  --bs-table-accent-bg: rgba(0, 0, 0, 0.075);
+  color: var(--bs-table-color);
+}
+
+.bootstrap-table-widget .table-dark {
+  --bs-table-color: #fff;
+  --bs-table-bg: #212529;
+  --bs-table-border-color: #373b3e;
+  --bs-table-striped-bg: #2c3034;
+  --bs-table-striped-color: #fff;
+  --bs-table-active-bg: #373b3e;
+  --bs-table-active-color: #fff;
+  --bs-table-hover-bg: #323539;
+  --bs-table-hover-color: #fff;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-primary {
+  --bs-table-color: #000;
+  --bs-table-bg: #cfe2ff;
+  --bs-table-border-color: #a6cbff;
+  --bs-table-striped-bg: #c5d7f2;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #bacbe6;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #bfd1ec;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-secondary {
+  --bs-table-color: #000;
+  --bs-table-bg: #e2e3e5;
+  --bs-table-border-color: #c4c6c8;
+  --bs-table-striped-bg: #d7d8da;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #cbccce;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #d1d2d4;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-success {
+  --bs-table-color: #000;
+  --bs-table-bg: #d1e7dd;
+  --bs-table-border-color: #a3cfbb;
+  --bs-table-striped-bg: #c7dbd0;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #bcd0c4;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #c1d6cc;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-danger {
+  --bs-table-color: #000;
+  --bs-table-bg: #f8d7da;
+  --bs-table-border-color: #f1aeb5;
+  --bs-table-striped-bg: #eccccf;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #dfc2c4;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #e5c7ca;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-warning {
+  --bs-table-color: #000;
+  --bs-table-bg: #fff3cd;
+  --bs-table-border-color: #ffecb5;
+  --bs-table-striped-bg: #f2e7c3;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #e6dbb9;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #ece1be;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-info {
+  --bs-table-color: #000;
+  --bs-table-bg: #cff4fc;
+  --bs-table-border-color: #b6effb;
+  --bs-table-striped-bg: #c5e8ef;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #badce3;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #bfe2e9;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+.bootstrap-table-widget .table-light {
+  --bs-table-color: #000;
+  --bs-table-bg: #f8f9fa;
+  --bs-table-border-color: #dfe0e1;
+  --bs-table-striped-bg: #ecedee;
+  --bs-table-striped-color: #000;
+  --bs-table-active-bg: #dfe0e1;
+  --bs-table-active-color: #000;
+  --bs-table-hover-bg: #e5e6e7;
+  --bs-table-hover-color: #000;
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+}
+
+/* Table borders */
+.bootstrap-table-widget .table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.bootstrap-table-widget .table-bordered > :not(caption) > * {
+  border-width: 1px 0;
+}
+
+.bootstrap-table-widget .table-bordered > :not(caption) > * > * {
+  border-width: 0 1px;
+}
+
+.bootstrap-table-widget .table-borderless > :not(caption) > * > * {
+  border-bottom-width: 0;
+}
+
+.bootstrap-table-widget .table-borderless > :not(:first-child) {
+  border-top-width: 0;
+}
+
+/* Table sizes */
+.bootstrap-table-widget .table-sm > :not(caption) > * > * {
+  padding: 0.25rem 0.25rem;
+}
+
+.bootstrap-table-widget .table-lg > :not(caption) > * > * {
+  padding: 0.75rem 0.75rem;
+}
+
+/* Button styles */
+.bootstrap-table-widget .btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-table-widget .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.25rem;
+}
+
+.bootstrap-table-widget .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-table-widget .btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.bootstrap-table-widget .btn-danger {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.bootstrap-table-widget .btn-danger:hover {
+  color: #fff;
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+
+/* Table responsive */
+@media (max-width: 575.98px) {
+  .bootstrap-table-widget .table-responsive-sm {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .bootstrap-table-widget .table-responsive-md {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .bootstrap-table-widget .table-responsive-lg {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .bootstrap-table-widget .table-responsive-xl {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 1399.98px) {
+  .bootstrap-table-widget .table-responsive-xxl {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

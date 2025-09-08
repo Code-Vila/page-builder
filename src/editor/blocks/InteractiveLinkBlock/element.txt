@@ -1,0 +1,4 @@
+<a href="#" class="interactive-link">
+  <span class="link-text">Link Interativo</span>
+  <span class="link-icon">↗</span>
+</a>

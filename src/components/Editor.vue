@@ -533,7 +533,49 @@
             id="traits-container"
             class="gjs-traits-container p-3"
             style="display: none"
-          ></div>
+          >
+            <!-- Informações do elemento selecionado -->
+            <div
+              v-if="selectedElementInfo"
+              class="mb-4 p-3 bg-gray-700 rounded-lg"
+            >
+              <h4 class="text-white font-medium mb-2">Elemento Selecionado</h4>
+              <div class="text-sm text-gray-300">
+                <div>
+                  <strong>Tipo:</strong>
+                  {{
+                    (selectedElementInfo as any).tagName ||
+                    selectedElementInfo.type
+                  }}
+                </div>
+                <div>
+                  <strong>ID:</strong>
+                  {{ (selectedElementInfo as any).id || "Nenhum" }}
+                </div>
+                <div>
+                  <strong>Classes:</strong>
+                  {{ selectedElementInfo.classes || "Nenhuma" }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Ajuda para traits -->
+            <div class="mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg">
+              <h4 class="text-blue-300 font-medium mb-2">💡 Dicas</h4>
+              <div class="text-sm text-blue-200">
+                <div>• <strong>Links:</strong> Configure URL, target e rel</div>
+                <div>
+                  • <strong>Botões:</strong> Defina ações e redirecionamentos
+                </div>
+                <div>
+                  • <strong>CSS:</strong> Adicione estilos personalizados
+                </div>
+                <div>
+                  • <strong>Imagens:</strong> Configure src, alt e links
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -883,6 +925,7 @@ const editorConfig = {
   // Configuração do gerenciador de traits
   traitManager: {
     appendTo: "#traits-container",
+    custom: true,
   },
 
   // Configuração do Device Manager
@@ -1204,6 +1247,806 @@ const previewPage = () => {
   const css = editor.value.getCss();
   const js = editor.value.getJs();
 
+  console.log("Preview - HTML:", html.substring(0, 200) + "...");
+  console.log("Preview - CSS:", css.substring(0, 200) + "...");
+  console.log("Preview - JS:", js.substring(0, 200) + "...");
+
+  // JavaScript para modais Bootstrap no preview
+  const bootstrapModalJS = `
+    // JavaScript para modais Bootstrap no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Bootstrap Modal JS carregado no preview");
+      
+      // Função para abrir modal
+      const openModal = (modalId) => {
+        console.log("Tentando abrir modal:", modalId);
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = "block";
+          modal.classList.add("show");
+          document.body.classList.add("modal-open");
+
+          // Adicionar backdrop
+          const existingBackdrop = document.getElementById("modal-backdrop");
+          if (existingBackdrop) {
+            existingBackdrop.remove();
+          }
+
+          const backdrop = document.createElement("div");
+          backdrop.className = "modal-backdrop fade show";
+          backdrop.id = "modal-backdrop";
+          backdrop.onclick = () => closeModal(modalId);
+          document.body.appendChild(backdrop);
+
+          // Foco no modal
+          setTimeout(() => {
+            const focusableElement = modal.querySelector(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusableElement) {
+              focusableElement.focus();
+            }
+          }, 100);
+        }
+      };
+
+      // Função para fechar modal
+      const closeModal = (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = "none";
+          modal.classList.remove("show");
+          document.body.classList.remove("modal-open");
+
+          // Remover backdrop
+          const backdrop = document.getElementById("modal-backdrop");
+          if (backdrop) {
+            backdrop.remove();
+          }
+        }
+      };
+
+      // Event delegation para botões de abrir modal
+      document.addEventListener("click", (e) => {
+        const target = e.target;
+        const triggerBtn = target.closest('[data-bs-toggle="modal"]');
+        
+        console.log("Click detectado:", target, "Trigger button:", triggerBtn);
+        
+        if (triggerBtn) {
+          const modalId = triggerBtn.getAttribute("data-bs-target")?.replace("#", "");
+          console.log("Modal ID encontrado:", modalId);
+          if (modalId) {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(modalId);
+          }
+        }
+
+        // Botões de fechar modal
+        const closeBtn = target.closest('[data-bs-dismiss="modal"]');
+        if (closeBtn) {
+          const modal = closeBtn.closest(".modal");
+          if (modal) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal(modal.id);
+          }
+        }
+
+        // Fechar ao clicar no backdrop
+        if (target.classList.contains("modal")) {
+          closeModal(target.id);
+        }
+      });
+
+      // Fechar com ESC
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const openModal = document.querySelector(".modal.show");
+          if (openModal) {
+            closeModal(openModal.id);
+          }
+        }
+      });
+    });
+  `;
+
+  // CSS para Accordion no preview
+  const accordionCSS = `
+    .accordion-widget {
+      width: 100% !important;
+      max-width: 600px !important;
+      margin: 0 auto !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    
+    .accordion-item {
+      border: 1px solid #e5e7eb !important;
+      border-radius: 8px !important;
+      margin-bottom: 8px !important;
+      overflow: hidden !important;
+    }
+    
+    .accordion-item:last-child {
+      margin-bottom: 0 !important;
+    }
+    
+    .accordion-toggle {
+      display: none !important;
+    }
+    
+    .accordion-header {
+      background: #f9fafb !important;
+      padding: 16px 20px !important;
+      cursor: pointer !important;
+      border: none !important;
+      width: 100% !important;
+      text-align: left !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      transition: background-color 0.2s ease !important;
+    }
+    
+    .accordion-header:hover {
+      background: #f3f4f6 !important;
+    }
+    
+    .accordion-header h3 {
+      margin: 0 !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      color: #374151 !important;
+    }
+    
+    .accordion-icon {
+      transition: transform 0.2s ease !important;
+      color: #6b7280 !important;
+    }
+    
+    .accordion-toggle:checked + .accordion-header .accordion-icon {
+      transform: rotate(180deg) !important;
+    }
+    
+    .accordion-content {
+      max-height: 0 !important;
+      overflow: hidden !important;
+      transition: max-height 0.3s ease !important;
+      background: white !important;
+    }
+    
+    .accordion-toggle:checked + .accordion-header + .accordion-content {
+      max-height: 200px !important;
+    }
+    
+    .accordion-content p {
+      margin: 0 !important;
+      padding: 20px !important;
+      color: #6b7280 !important;
+      line-height: 1.6 !important;
+    }
+  `;
+
+  // CSS para Toggle no preview
+  const toggleCSS = `
+    .toggle-widget {
+      width: 100% !important;
+      max-width: 800px !important;
+      margin: 20px auto !important;
+      background: #ffffff !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+      overflow: hidden !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    
+    .toggle-section {
+      border-bottom: 1px solid #e5e7eb !important;
+    }
+    
+    .toggle-section:last-child {
+      border-bottom: none !important;
+    }
+    
+    .toggle-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 20px 24px !important;
+      cursor: pointer !important;
+      background: #ffffff !important;
+      transition: all 0.3s ease !important;
+      border: none !important;
+      width: 100% !important;
+      text-align: left !important;
+      position: relative !important;
+    }
+    
+    .toggle-header:hover {
+      background: #f8fafc !important;
+    }
+    
+    .toggle-header.active {
+      background: #f0f9ff !important;
+      border-left: 4px solid #3b82f6 !important;
+    }
+    
+    .toggle-title {
+      margin: 0 !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      color: #1f2937 !important;
+      flex: 1 !important;
+    }
+    
+    .toggle-icon {
+      font-size: 20px !important;
+      font-weight: bold !important;
+      color: #6b7280 !important;
+      transition: transform 0.3s ease !important;
+      min-width: 24px !important;
+      text-align: center !important;
+    }
+    
+    .toggle-header.active .toggle-icon {
+      color: #3b82f6 !important;
+      transform: rotate(45deg) !important;
+    }
+    
+    .toggle-content {
+      max-height: 0 !important;
+      overflow: hidden !important;
+      transition: max-height 0.3s ease !important;
+      background: #fafbfc !important;
+    }
+    
+    .toggle-content.active {
+      max-height: 500px !important;
+    }
+    
+    .toggle-content-wrapper {
+      padding: 20px 24px !important;
+    }
+    
+    .toggle-content-wrapper p {
+      margin: 0 0 16px 0 !important;
+      color: #4b5563 !important;
+      line-height: 1.6 !important;
+    }
+    
+    .toggle-content-wrapper ul {
+      margin: 0 0 16px 0 !important;
+      padding-left: 20px !important;
+    }
+    
+    .toggle-content-wrapper li {
+      margin: 0 0 8px 0 !important;
+      color: #374151 !important;
+    }
+    
+    .highlight-box {
+      background: #dbeafe !important;
+      border: 1px solid #93c5fd !important;
+      border-radius: 8px !important;
+      padding: 16px !important;
+      margin: 16px 0 !important;
+    }
+    
+    .highlight-box strong {
+      color: #1e40af !important;
+    }
+    
+    .example-button {
+      background: #3b82f6 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 12px 24px !important;
+      cursor: pointer !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      transition: background-color 0.2s ease !important;
+    }
+    
+    .example-button:hover {
+      background: #2563eb !important;
+    }
+    
+    .contact-info {
+      background: #f3f4f6 !important;
+      border-radius: 8px !important;
+      padding: 16px !important;
+      margin: 16px 0 !important;
+    }
+    
+    .contact-info p {
+      margin: 0 0 8px 0 !important;
+    }
+    
+    .contact-info strong {
+      color: #1f2937 !important;
+    }
+  `;
+
+  // CSS para Tabs no preview
+  const tabsCSS = `
+    .tabs-widget {
+      width: 100% !important;
+      margin: 20px 0 !important;
+      background: #ffffff !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+      overflow: hidden !important;
+      border: 1px solid #e5e7eb !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    
+    .tabs-nav {
+      display: flex !important;
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e5e7eb !important;
+      overflow-x: auto !important;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    
+    .tabs-nav::-webkit-scrollbar {
+      display: none !important;
+    }
+    
+    .tab-button {
+      flex: 1 !important;
+      min-width: 120px !important;
+      padding: 16px 24px !important;
+      border: none !important;
+      background: transparent !important;
+      color: #6b7280 !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      text-align: center !important;
+      position: relative !important;
+    }
+    
+    .tab-button:hover {
+      background: #f1f5f9 !important;
+      color: #374151 !important;
+    }
+    
+    .tab-button.active {
+      background: #3b82f6 !important;
+      color: white !important;
+    }
+    
+    .tab-button.active::after {
+      content: '' !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 3px !important;
+      background: #1d4ed8 !important;
+    }
+    
+    .tabs-content {
+      padding: 0 !important;
+    }
+    
+    .tab-pane {
+      display: none !important;
+      padding: 24px !important;
+      animation: fadeIn 0.3s ease !important;
+    }
+    
+    .tab-pane.active {
+      display: block !important;
+    }
+    
+    .tab-content-wrapper h3 {
+      margin: 0 0 16px 0 !important;
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      color: #1f2937 !important;
+    }
+    
+    .tab-content-wrapper p {
+      margin: 0 0 16px 0 !important;
+      color: #6b7280 !important;
+      line-height: 1.6 !important;
+    }
+    
+    .tab-content-wrapper ul {
+      margin: 0 0 16px 0 !important;
+      padding-left: 20px !important;
+    }
+    
+    .tab-content-wrapper li {
+      margin: 0 0 8px 0 !important;
+      color: #374151 !important;
+    }
+    
+    .feature-box {
+      background: #f0f9ff !important;
+      border: 1px solid #bae6fd !important;
+      border-radius: 8px !important;
+      padding: 16px !important;
+      margin: 16px 0 !important;
+    }
+    
+    .feature-box h4 {
+      margin: 0 0 8px 0 !important;
+      color: #0369a1 !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+    }
+    
+    .feature-box p {
+      margin: 0 !important;
+      color: #0c4a6e !important;
+    }
+    
+    .action-area {
+      margin: 16px 0 !important;
+    }
+    
+    .sample-button {
+      background: #3b82f6 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 12px 24px !important;
+      cursor: pointer !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      transition: background-color 0.2s ease !important;
+    }
+    
+    .sample-button:hover {
+      background: #2563eb !important;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `;
+
+  // CSS para Counter no preview
+  const counterCSS = `
+    .counter-widget {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      padding: 20px !important;
+      background: #f9fafb !important;
+      border-radius: 12px !important;
+      max-width: 300px !important;
+      margin: 0 auto !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    
+    .counter-title {
+      font-size: 18px !important;
+      font-weight: 600 !important;
+      color: #374151 !important;
+      margin-bottom: 16px !important;
+      text-align: center !important;
+    }
+    
+    .counter-display {
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      margin-bottom: 16px !important;
+    }
+    
+    .counter-value {
+      font-size: 32px !important;
+      font-weight: 700 !important;
+      color: #1f2937 !important;
+      min-width: 60px !important;
+      text-align: center !important;
+    }
+    
+    .counter-btn {
+      background: #3b82f6 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      width: 40px !important;
+      height: 40px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      font-size: 18px !important;
+      font-weight: 600 !important;
+      transition: background-color 0.2s ease !important;
+    }
+    
+    .counter-btn:hover {
+      background: #2563eb !important;
+    }
+    
+    .counter-btn:active {
+      transform: scale(0.95) !important;
+    }
+    
+    .counter-reset {
+      background: #6b7280 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 8px 16px !important;
+      cursor: pointer !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      transition: background-color 0.2s ease !important;
+    }
+    
+    .counter-reset:hover {
+      background: #4b5563 !important;
+    }
+  `;
+
+  // CSS para Container no preview
+  const containerCSS = `
+    .container-widget {
+      width: 100% !important;
+      min-height: 100px !important;
+      padding: 20px !important;
+      border: 2px dashed #e5e7eb !important;
+      border-radius: 8px !important;
+      background: #f9fafb !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 auto !important;
+      box-sizing: border-box !important;
+    }
+    
+    .container-widget.large {
+      max-width: 1200px !important;
+    }
+    
+    .container-widget.medium {
+      max-width: 960px !important;
+    }
+    
+    .container-widget.small {
+      max-width: 768px !important;
+    }
+    
+    .container-widget.full {
+      max-width: 100% !important;
+    }
+    
+    .container-content {
+      text-align: center !important;
+      color: #6b7280 !important;
+    }
+  `;
+
+  // JavaScript para Accordion no preview
+  const accordionJS = `
+    // JavaScript para Accordion no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Accordion JS carregado no preview");
+      
+      // Inicializar accordions
+      const accordions = document.querySelectorAll('.accordion-widget');
+      accordions.forEach(accordion => {
+        const headers = accordion.querySelectorAll('.accordion-header');
+        
+        headers.forEach(header => {
+          header.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Encontrar o checkbox associado ao label
+            const label = header;
+            const toggleId = label.getAttribute('for');
+            let toggle = null;
+            
+            if (toggleId) {
+              toggle = accordion.querySelector('#' + toggleId);
+            } else {
+              // Fallback: procurar o checkbox anterior
+              toggle = header.previousElementSibling;
+            }
+            
+            if (toggle && toggle.type === 'checkbox') {
+              // Toggle do checkbox
+              toggle.checked = !toggle.checked;
+              
+              // Disparar evento change para ativar CSS
+              const changeEvent = new Event('change', { bubbles: true });
+              toggle.dispatchEvent(changeEvent);
+            }
+          });
+        });
+      });
+    });
+  `;
+
+  // JavaScript para Toggle no preview
+  const toggleJS = `
+    // JavaScript para Toggle no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Toggle JS carregado no preview");
+      
+      // Inicializar toggles
+      const toggleWidgets = document.querySelectorAll('.toggle-widget');
+      toggleWidgets.forEach(toggleWidget => {
+        const headers = toggleWidget.querySelectorAll('.toggle-header');
+        
+        headers.forEach(header => {
+          header.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const target = header.getAttribute('data-toggle');
+            const content = toggleWidget.querySelector('[data-section="' + target + '"]');
+            const icon = header.querySelector('.toggle-icon');
+            
+            const isActive = header.classList.contains('active');
+            
+            if (isActive) {
+              header.classList.remove('active');
+              if (content) content.classList.remove('active');
+              if (icon) icon.textContent = '+';
+            } else {
+              header.classList.add('active');
+              if (content) content.classList.add('active');
+              if (icon) icon.textContent = '−';
+            }
+          });
+        });
+      });
+    });
+  `;
+
+  // JavaScript para Tabs no preview
+  const tabsJS = `
+    // JavaScript para Tabs no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Tabs JS carregado no preview");
+      
+      // Inicializar tabs
+      const tabsWidgets = document.querySelectorAll('.tabs-widget');
+      tabsWidgets.forEach(tabsWidget => {
+        const tabButtons = tabsWidget.querySelectorAll('.tab-button');
+        const tabPanes = tabsWidget.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetTab = button.getAttribute('data-tab');
+            
+            // Remover active de todos os botões
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Remover active de todos os painéis
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Adicionar active ao botão clicado
+            button.classList.add('active');
+            
+            // Adicionar active ao painel correspondente
+            const targetPane = tabsWidget.querySelector('[data-content="' + targetTab + '"]');
+            if (targetPane) {
+              targetPane.classList.add('active');
+            }
+          });
+        });
+      });
+    });
+  `;
+
+  // JavaScript para Counter no preview
+  const counterJS = `
+    // JavaScript para Counter no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Counter JS carregado no preview");
+      
+      // Inicializar counters
+      const counters = document.querySelectorAll('.counter-widget');
+      counters.forEach(counter => {
+        const buttons = counter.querySelectorAll('.counter-btn');
+        const valueElement = counter.querySelector('.counter-value');
+        
+        let currentValue = parseInt(counter.getAttribute('data-counter') || '0');
+        if (valueElement) valueElement.textContent = currentValue.toString();
+        
+        buttons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const action = button.getAttribute('data-action');
+            if (!action) return;
+            
+            const minValue = parseInt(counter.getAttribute('data-min-value') || '0');
+            const maxValue = parseInt(counter.getAttribute('data-max-value') || '100');
+            
+            switch (action) {
+              case 'increase':
+                if (currentValue < maxValue) {
+                  currentValue++;
+                }
+                break;
+              case 'decrease':
+                if (currentValue > minValue) {
+                  currentValue--;
+                }
+                break;
+              case 'reset':
+                currentValue = parseInt(counter.getAttribute('data-initial-value') || '0');
+                break;
+            }
+            
+            if (valueElement) valueElement.textContent = currentValue.toString();
+            counter.setAttribute('data-counter', currentValue.toString());
+          });
+        });
+      });
+    });
+  `;
+
+  // JavaScript para Container no preview
+  const containerJS = `
+    // JavaScript para Container no preview
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Container JS carregado no preview");
+      
+      // Aplicar estilos dinâmicos aos containers
+      const containers = document.querySelectorAll('.container-widget');
+      containers.forEach(container => {
+        // Aplicar largura baseada na classe
+        if (container.classList.contains('large')) {
+          container.style.maxWidth = '1200px';
+          container.style.margin = '0 auto';
+        } else if (container.classList.contains('medium')) {
+          container.style.maxWidth = '960px';
+          container.style.margin = '0 auto';
+        } else if (container.classList.contains('small')) {
+          container.style.maxWidth = '768px';
+          container.style.margin = '0 auto';
+        } else if (container.classList.contains('full')) {
+          container.style.maxWidth = '100%';
+        }
+        
+        // Aplicar alinhamento
+        const align = container.getAttribute('data-align');
+        if (align) {
+          container.style.textAlign = align;
+        }
+        
+        // Aplicar cor de fundo
+        const bgColor = container.getAttribute('data-bg-color');
+        if (bgColor) {
+          container.style.backgroundColor = bgColor;
+        }
+        
+        // Aplicar padding
+        const padding = container.getAttribute('data-padding');
+        if (padding) {
+          container.style.padding = padding;
+        }
+        
+        // Aplicar margin
+        const margin = container.getAttribute('data-margin');
+        if (margin) {
+          container.style.margin = margin;
+        }
+      });
+    });
+  `;
+
   const fullHtml = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -1215,12 +2058,125 @@ const previewPage = () => {
         * { box-sizing: border-box; }
         body { margin: 0 !important; padding: 0 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         ${css}
+        
+        /* CSS específico para accordion no preview */
+        ${accordionCSS}
+        
+        /* CSS específico para toggle no preview */
+        ${toggleCSS}
+        
+        /* CSS específico para tabs no preview */
+        ${tabsCSS}
+        
+        /* CSS específico para counter no preview */
+        ${counterCSS}
+        
+        /* CSS específico para container no preview */
+        ${containerCSS}
+        
+        /* CSS específico para modais no preview */
+        .modal {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          z-index: 9999 !important;
+          width: 100% !important;
+          height: 100% !important;
+          overflow-x: hidden !important;
+          overflow-y: auto !important;
+          outline: 0 !important;
+          display: none !important;
+        }
+        
+        .modal.show {
+          display: block !important;
+          opacity: 1 !important;
+        }
+        
+        .modal-backdrop {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          z-index: 9998 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          background-color: #000 !important;
+          opacity: 0.5 !important;
+        }
+        
+        body.modal-open {
+          overflow: hidden !important;
+        }
+        
+        /* CSS específico para Container no preview */
+        .container-widget {
+          width: 100% !important;
+          min-height: 100px !important;
+          padding: 20px !important;
+          border: 2px dashed #e5e7eb !important;
+          border-radius: 8px !important;
+          background: #f9fafb !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.3s ease !important;
+        }
+        
+        .container-widget:hover {
+          border-color: #3b82f6 !important;
+          background: #eff6ff !important;
+        }
+        
+        .container-content {
+          width: 100% !important;
+          text-align: center !important;
+          color: #6b7280 !important;
+          font-size: 14px !important;
+        }
+        
+        /* Classes de largura do container */
+        .container-widget.large {
+          max-width: 1200px !important;
+          margin: 0 auto !important;
+        }
+        
+        .container-widget.medium {
+          max-width: 960px !important;
+          margin: 0 auto !important;
+        }
+        
+        .container-widget.small {
+          max-width: 768px !important;
+          margin: 0 auto !important;
+        }
+        
+        .container-widget.full {
+          max-width: 100% !important;
+        }
     </style>
 </head>
 <body>
     ${html}
     <script>
         ${js}
+    <\/script>
+    <script>
+        ${bootstrapModalJS}
+    <\/script>
+    <script>
+        ${accordionJS}
+    <\/script>
+    <script>
+        ${toggleJS}
+    <\/script>
+    <script>
+        ${tabsJS}
+    <\/script>
+    <script>
+        ${counterJS}
+    <\/script>
+    <script>
+        ${containerJS}
     <\/script>
 </body>
 </html>`;
@@ -1468,6 +2424,3784 @@ const setupCanvasDragDrop = (editor: any) => {
   });
 };
 
+// Sistema de traits customizados
+const setupCustomTraits = (editor: any) => {
+  if (!editor) return;
+
+  // Traits para links
+  editor.DomComponents.addType("link", {
+    extend: "link",
+    model: {
+      defaults: {
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-link",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "URL do Link",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "target",
+            label: "Abrir em",
+            options: [
+              { value: "_self", name: "Mesma aba" },
+              { value: "_blank", name: "Nova aba" },
+              { value: "_parent", name: "Janela pai" },
+              { value: "_top", name: "Janela principal" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título (Tooltip)",
+            placeholder: "Descrição do link",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "rel",
+            label: "Rel",
+            options: [
+              { value: "", name: "Nenhum" },
+              { value: "nofollow", name: "No Follow" },
+              { value: "noopener", name: "No Opener" },
+              { value: "noreferrer", name: "No Referrer" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+
+            // Remover estilo anterior se existir
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+
+            // Adicionar novo estilo
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para botão customizado
+  editor.DomComponents.addType("custom-button", {
+    extend: "button",
+    model: {
+      defaults: {
+        tagName: "button",
+        classes: ["custom-button"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-botao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do botão",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "button-text",
+            label: "Texto do Botão",
+            placeholder: "Clique Aqui",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-style",
+            label: "Estilo do Botão",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "outline", name: "Contorno" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+            ],
+          },
+          {
+            type: "select",
+            name: "button-size",
+            label: "Tamanho do Botão",
+            changeProp: 1,
+            options: [
+              { value: "small", name: "Pequeno" },
+              { value: "medium", name: "Médio" },
+              { value: "large", name: "Grande" },
+              { value: "xlarge", name: "Extra Grande" },
+            ],
+          },
+          {
+            type: "select",
+            name: "button-type",
+            label: "Tipo de Ação",
+            changeProp: 1,
+            options: [
+              { value: "link", name: "Link" },
+              { value: "submit", name: "Enviar Formulário" },
+              { value: "custom", name: "JavaScript Personalizado" },
+              { value: "scroll", name: "Rolar para Seção" },
+              { value: "modal", name: "Abrir Modal" },
+              { value: "copy", name: "Copiar Texto" },
+            ],
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "URL (se tipo Link)",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "onclick",
+            label: "JavaScript Personalizado",
+            placeholder: 'alert("Olá!")',
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "disabled",
+            label: "Desabilitado",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar ações quando os traits forem alterados
+        (this as any).on(
+          "change:button-type change:href change:onclick change:button-text change:button-style change:button-size change:disabled",
+          () => {
+            const buttonType = (this as any).get("button-type");
+            const href = (this as any).get("href");
+            const onclick = (this as any).get("onclick");
+            const buttonText = (this as any).get("button-text");
+            const buttonStyle = (this as any).get("button-style");
+            const buttonSize = (this as any).get("button-size");
+            const disabled = (this as any).get("disabled");
+
+            let action = "";
+            switch (buttonType) {
+              case "link":
+                action = `window.location.href = '${href}'`;
+                break;
+              case "custom":
+                action = onclick;
+                break;
+              case "submit":
+                action = `this.closest('form')?.submit()`;
+                break;
+            }
+            if (action) {
+              (this as any).set("onclick", action);
+            }
+
+            // Aplicar texto do botão
+            if (buttonText) {
+              const view = (this as any).getView();
+              if (view) {
+                const textElement = view.el.querySelector(".button-text");
+                if (textElement) {
+                  textElement.textContent = buttonText;
+                }
+              }
+            }
+
+            // Aplicar classes de estilo e tamanho
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+              el.classList.remove(
+                "success",
+                "danger",
+                "outline",
+                "warning",
+                "info"
+              );
+              el.classList.remove("small", "medium", "large", "xlarge");
+              if (buttonStyle && buttonStyle !== "default") {
+                el.classList.add(buttonStyle);
+              }
+              if (buttonSize && buttonSize !== "medium") {
+                el.classList.add(buttonSize);
+              }
+              if (disabled) {
+                el.disabled = true;
+                el.classList.add("disabled");
+              } else {
+                el.disabled = false;
+                el.classList.remove("disabled");
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para imagem customizada
+  editor.DomComponents.addType("custom-image", {
+    extend: "image",
+    model: {
+      defaults: {
+        tagName: "img",
+        classes: ["custom-image"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "src",
+            label: "URL da Imagem",
+            placeholder: "https://exemplo.com/imagem.jpg",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "alt",
+            label: "Texto Alternativo",
+            placeholder: "Descrição da imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "Link (opcional)",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "target",
+            label: "Abrir Link em",
+            changeProp: 1,
+            options: [
+              { value: "_self", name: "Mesma Aba" },
+              { value: "_blank", name: "Nova Aba" },
+            ],
+          },
+          {
+            type: "select",
+            name: "image-size",
+            label: "Tamanho da Imagem",
+            changeProp: 1,
+            options: [
+              { value: "small", name: "Pequena (200px)" },
+              { value: "medium", name: "Média (400px)" },
+              { value: "large", name: "Grande (600px)" },
+              { value: "full", name: "Largura Completa" },
+            ],
+          },
+          {
+            type: "select",
+            name: "image-style",
+            label: "Estilo da Imagem",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "rounded", name: "Arredondada" },
+              { value: "circle", name: "Circular" },
+              { value: "shadow", name: "Com Sombra" },
+            ],
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border: 2px solid red; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de imagem
+        (this as any).on(
+          "change:src change:alt change:image-size change:image-style",
+          () => {
+            const src = (this as any).get("src");
+            const alt = (this as any).get("alt");
+            const imageSize = (this as any).get("image-size");
+            const imageStyle = (this as any).get("image-style");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+              if (src) el.src = src;
+              if (alt) el.alt = alt;
+
+              // Aplicar classes de tamanho e estilo
+              el.classList.remove("small", "medium", "large", "full");
+              el.classList.remove("rounded", "circle", "shadow");
+              if (imageSize && imageSize !== "medium")
+                el.classList.add(imageSize);
+              if (imageStyle && imageStyle !== "default")
+                el.classList.add(imageStyle);
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para heading customizado
+  editor.DomComponents.addType("custom-heading", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "h2",
+        classes: ["heading-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-titulo",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do elemento",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "heading-text",
+            label: "Texto do Título",
+            placeholder: "Seu Título Aqui",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "heading-level",
+            label: "Nível do Título",
+            changeProp: 1,
+            options: [
+              { value: "h1", name: "H1 (Principal)" },
+              { value: "h2", name: "H2 (Secundário)" },
+              { value: "h3", name: "H3 (Terciário)" },
+              { value: "h4", name: "H4" },
+              { value: "h5", name: "H5" },
+              { value: "h6", name: "H6" },
+            ],
+          },
+          {
+            type: "select",
+            name: "text-align",
+            label: "Alinhamento",
+            changeProp: 1,
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "center", name: "Centro" },
+              { value: "right", name: "Direita" },
+              { value: "justify", name: "Justificado" },
+            ],
+          },
+          {
+            type: "select",
+            name: "heading-style",
+            label: "Estilo do Título",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "bold", name: "Negrito" },
+              { value: "italic", name: "Itálico" },
+              { value: "underline", name: "Sublinhado" },
+            ],
+          },
+          {
+            type: "text",
+            name: "text-color",
+            label: "Cor do Texto",
+            placeholder: "#333333",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { font-size: 2rem; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de heading
+        (this as any).on(
+          "change:heading-text change:heading-level change:text-align change:heading-style change:text-color",
+          () => {
+            const headingText = (this as any).get("heading-text");
+            const headingLevel = (this as any).get("heading-level");
+            const textAlign = (this as any).get("text-align");
+            const headingStyle = (this as any).get("heading-style");
+            const textColor = (this as any).get("text-color");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+              if (headingText) el.textContent = headingText;
+              if (headingLevel) el.tagName = headingLevel.toUpperCase();
+              if (textAlign) el.style.textAlign = textAlign;
+              if (textColor) el.style.color = textColor;
+
+              // Aplicar classes de estilo
+              el.classList.remove("bold", "italic", "underline");
+              if (headingStyle && headingStyle !== "default")
+                el.classList.add(headingStyle);
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para texto customizado
+  editor.DomComponents.addType("custom-text", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["text-block"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-texto",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do elemento",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "text-title",
+            label: "Título do Texto",
+            placeholder: "Título Personalizável",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "text-content",
+            label: "Conteúdo do Texto",
+            placeholder: "Este é um texto de exemplo...",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "text-align",
+            label: "Alinhamento",
+            changeProp: 1,
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "center", name: "Centro" },
+              { value: "right", name: "Direita" },
+              { value: "justify", name: "Justificado" },
+            ],
+          },
+          {
+            type: "select",
+            name: "title-level",
+            label: "Nível do Título",
+            changeProp: 1,
+            options: [
+              { value: "h1", name: "H1 (Principal)" },
+              { value: "h2", name: "H2 (Secundário)" },
+              { value: "h3", name: "H3 (Terciário)" },
+              { value: "h4", name: "H4" },
+              { value: "h5", name: "H5" },
+              { value: "h6", name: "H6" },
+            ],
+          },
+          {
+            type: "text",
+            name: "title-color",
+            label: "Cor do Título",
+            placeholder: "#333333",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "content-color",
+            label: "Cor do Conteúdo",
+            placeholder: "#666666",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { font-size: 1.2rem; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de texto
+        (this as any).on(
+          "change:text-title change:text-content change:text-align change:title-level change:title-color change:content-color",
+          () => {
+            const textTitle = (this as any).get("text-title");
+            const textContent = (this as any).get("text-content");
+            const textAlign = (this as any).get("text-align");
+            const titleLevel = (this as any).get("title-level");
+            const titleColor = (this as any).get("title-color");
+            const contentColor = (this as any).get("content-color");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+              if (textAlign) el.style.textAlign = textAlign;
+
+              const titleEl = el.querySelector(".text-title");
+              if (titleEl) {
+                if (textTitle) titleEl.textContent = textTitle;
+                if (titleLevel) titleEl.tagName = titleLevel.toUpperCase();
+                if (titleColor) titleEl.style.color = titleColor;
+              }
+
+              const contentEl = el.querySelector(".text-content");
+              if (contentEl) {
+                if (textContent) contentEl.textContent = textContent;
+                if (contentColor) contentEl.style.color = contentColor;
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para container customizado
+  editor.DomComponents.addType("custom-container", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["container-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-container",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do container",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "container-width",
+            label: "Largura do Container",
+            changeProp: 1,
+            options: [
+              { value: "full", name: "Largura Completa" },
+              { value: "large", name: "Grande (1200px)" },
+              { value: "medium", name: "Médio (960px)" },
+              { value: "small", name: "Pequeno (768px)" },
+            ],
+          },
+          {
+            type: "select",
+            name: "container-align",
+            label: "Alinhamento",
+            changeProp: 1,
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "center", name: "Centro" },
+              { value: "right", name: "Direita" },
+            ],
+          },
+          {
+            type: "text",
+            name: "background-color",
+            label: "Cor de Fundo",
+            placeholder: "#ffffff",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "padding",
+            label: "Espaçamento Interno",
+            placeholder: "20px",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "margin",
+            label: "Margem Externa",
+            placeholder: "0 auto",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border: 1px solid #ccc; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de container
+        (this as any).on(
+          "change:container-width change:container-align change:background-color change:padding change:margin",
+          () => {
+            const containerWidth = (this as any).get("container-width");
+            const containerAlign = (this as any).get("container-align");
+            const backgroundColor = (this as any).get("background-color");
+            const padding = (this as any).get("padding");
+            const margin = (this as any).get("margin");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Aplicar estilos inline
+              if (backgroundColor) {
+                el.style.backgroundColor = backgroundColor;
+                el.setAttribute("data-bg-color", backgroundColor);
+              }
+              if (padding) {
+                el.style.padding = padding;
+                el.setAttribute("data-padding", padding);
+              }
+              if (margin) {
+                el.style.margin = margin;
+                el.setAttribute("data-margin", margin);
+              }
+              if (containerAlign) {
+                el.style.textAlign = containerAlign;
+                el.setAttribute("data-align", containerAlign);
+              }
+
+              // Aplicar classes de largura
+              el.classList.remove("full", "large", "medium", "small");
+              if (containerWidth && containerWidth !== "full") {
+                el.classList.add(containerWidth);
+              } else {
+                el.classList.add("full");
+              }
+
+              // Aplicar largura máxima baseada na classe
+              if (containerWidth === "large") {
+                el.style.maxWidth = "1200px";
+                el.style.margin = margin || "0 auto";
+              } else if (containerWidth === "medium") {
+                el.style.maxWidth = "960px";
+                el.style.margin = margin || "0 auto";
+              } else if (containerWidth === "small") {
+                el.style.maxWidth = "768px";
+                el.style.margin = margin || "0 auto";
+              } else {
+                el.style.maxWidth = "100%";
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para seção customizada
+  editor.DomComponents.addType("custom-section", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "section",
+        classes: ["custom-section"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-secao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da seção",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "section-title",
+            label: "Título da Seção",
+            placeholder: "Título da Seção",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "section-description",
+            label: "Descrição da Seção",
+            placeholder: "Esta é uma descrição da seção...",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "section-style",
+            label: "Estilo da Seção",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "hero", name: "Hero (Destaque)" },
+              { value: "card", name: "Card" },
+              { value: "minimal", name: "Minimalista" },
+            ],
+          },
+          {
+            type: "text",
+            name: "background-color",
+            label: "Cor de Fundo",
+            placeholder: "#f8f9fa",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "text-color",
+            label: "Cor do Texto",
+            placeholder: "#333333",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "text-align",
+            label: "Alinhamento do Texto",
+            changeProp: 1,
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "center", name: "Centro" },
+              { value: "right", name: "Direita" },
+            ],
+          },
+          {
+            type: "text",
+            name: "padding",
+            label: "Espaçamento Interno",
+            placeholder: "60px 20px",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-top: 1px solid #eee; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de seção
+        (this as any).on(
+          "change:section-title change:section-description change:section-style change:background-color change:text-color change:text-align change:padding",
+          () => {
+            const sectionTitle = (this as any).get("section-title");
+            const sectionDescription = (this as any).get("section-description");
+            const sectionStyle = (this as any).get("section-style");
+            const backgroundColor = (this as any).get("background-color");
+            const textColor = (this as any).get("text-color");
+            const textAlign = (this as any).get("text-align");
+            const padding = (this as any).get("padding");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+              if (backgroundColor) el.style.backgroundColor = backgroundColor;
+              if (textColor) el.style.color = textColor;
+              if (textAlign) el.style.textAlign = textAlign;
+              if (padding) el.style.padding = padding;
+
+              // Aplicar classes de estilo
+              el.classList.remove("default", "hero", "card", "minimal");
+              if (sectionStyle && sectionStyle !== "default")
+                el.classList.add(sectionStyle);
+
+              const titleEl = el.querySelector(".section-title");
+              if (titleEl && sectionTitle) titleEl.textContent = sectionTitle;
+
+              const descEl = el.querySelector(".section-description");
+              if (descEl && sectionDescription)
+                descEl.textContent = sectionDescription;
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para vídeo customizado
+  editor.DomComponents.addType("custom-video", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["video-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-video",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do vídeo",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "video-type",
+            label: "Tipo de Vídeo",
+            changeProp: 1,
+            options: [
+              { value: "youtube", name: "YouTube" },
+              { value: "vimeo", name: "Vimeo" },
+              { value: "file", name: "Arquivo Local" },
+              { value: "embed", name: "Código Embed" },
+            ],
+          },
+          {
+            type: "text",
+            name: "video-url",
+            label: "URL do Vídeo",
+            placeholder: "https://www.youtube.com/watch?v=...",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "video-id",
+            label: "ID do Vídeo (YouTube/Vimeo)",
+            placeholder: "dQw4w9WgXcQ",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "video-size",
+            label: "Tamanho do Vídeo",
+            changeProp: 1,
+            options: [
+              { value: "small", name: "Pequeno (400px)" },
+              { value: "medium", name: "Médio (600px)" },
+              { value: "large", name: "Grande (800px)" },
+              { value: "full", name: "Largura Completa" },
+            ],
+          },
+          {
+            type: "select",
+            name: "video-aspect",
+            label: "Proporção",
+            changeProp: 1,
+            options: [
+              { value: "16:9", name: "16:9 (Widescreen)" },
+              { value: "4:3", name: "4:3 (Padrão)" },
+              { value: "1:1", name: "1:1 (Quadrado)" },
+            ],
+          },
+          {
+            type: "checkbox",
+            name: "autoplay",
+            label: "Reprodução Automática",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "controls",
+            label: "Mostrar Controles",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "loop",
+            label: "Repetir Vídeo",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de vídeo
+        (this as any).on(
+          "change:video-type change:video-url change:video-id change:video-size change:video-aspect change:autoplay change:controls change:loop",
+          () => {
+            const videoType = (this as any).get("video-type");
+            const videoUrl = (this as any).get("video-url");
+            const videoId = (this as any).get("video-id");
+            const videoSize = (this as any).get("video-size");
+            const videoAspect = (this as any).get("video-aspect");
+            const autoplay = (this as any).get("autoplay");
+            const controls = (this as any).get("controls");
+            const loop = (this as any).get("loop");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Aplicar classes de tamanho e proporção
+              el.classList.remove("small", "medium", "large", "full");
+              el.classList.remove("aspect-16-9", "aspect-4-3", "aspect-1-1");
+              if (videoSize && videoSize !== "medium")
+                el.classList.add(videoSize);
+              if (videoAspect)
+                el.classList.add(`aspect-${videoAspect.replace(":", "-")}`);
+
+              // Aqui você pode implementar a lógica para renderizar o vídeo baseado no tipo
+              // Por exemplo, gerar iframe para YouTube/Vimeo ou elemento video para arquivos locais
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para tabs customizado
+  editor.DomComponents.addType("custom-tabs", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["tabs-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minhas-abas",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título das abas",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "tab-title-1",
+            label: "Título da Aba 1",
+            placeholder: "Aba 1",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "tab-content-1",
+            label: "Conteúdo da Aba 1",
+            placeholder: "Conteúdo da primeira aba...",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "tab-title-2",
+            label: "Título da Aba 2",
+            placeholder: "Aba 2",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "tab-content-2",
+            label: "Conteúdo da Aba 2",
+            placeholder: "Conteúdo da segunda aba...",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "tab-title-3",
+            label: "Título da Aba 3",
+            placeholder: "Aba 3",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "tab-content-3",
+            label: "Conteúdo da Aba 3",
+            placeholder: "Conteúdo da terceira aba...",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "tabs-style",
+            label: "Estilo das Abas",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "pills", name: "Pills" },
+              { value: "underline", name: "Sublinhado" },
+              { value: "card", name: "Estilo Card" },
+            ],
+          },
+          {
+            type: "select",
+            name: "tabs-position",
+            label: "Posição das Abas",
+            changeProp: 1,
+            options: [
+              { value: "top", name: "Acima" },
+              { value: "left", name: "Esquerda" },
+              { value: "right", name: "Direita" },
+            ],
+          },
+          {
+            type: "text",
+            name: "active-tab",
+            label: "Aba Ativa Inicial",
+            placeholder: "tab1",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // JavaScript para tabs
+        const initTabs = () => {
+          const view = (this as any).getView();
+          if (view) {
+            const el = view.el;
+            const tabButtons = el.querySelectorAll(".tab-button");
+            const tabPanes = el.querySelectorAll(".tab-pane");
+
+            // Garantir que os botões sejam clicáveis no editor
+            tabButtons.forEach((button: HTMLElement) => {
+              button.style.pointerEvents = "auto";
+              button.style.zIndex = "10";
+              button.style.position = "relative";
+            });
+
+            // Remover listeners anteriores para evitar duplicação
+            tabButtons.forEach((button: HTMLElement) => {
+              const newButton = button.cloneNode(true) as HTMLElement;
+              newButton.style.pointerEvents = "auto";
+              newButton.style.zIndex = "10";
+              newButton.style.position = "relative";
+              button.parentNode?.replaceChild(newButton, button);
+            });
+
+            // Adicionar listeners aos novos elementos
+            const newTabButtons = el.querySelectorAll(".tab-button");
+            newTabButtons.forEach((button: HTMLElement) => {
+              button.addEventListener(
+                "click",
+                (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+
+                  const targetTab = button.getAttribute("data-tab");
+                  console.log("Tab clicked:", targetTab);
+
+                  // Remover active de todos os botões
+                  newTabButtons.forEach((btn: HTMLElement) =>
+                    btn.classList.remove("active")
+                  );
+
+                  // Remover active de todos os painéis
+                  tabPanes.forEach((pane: HTMLElement) =>
+                    pane.classList.remove("active")
+                  );
+
+                  // Adicionar active ao botão clicado
+                  button.classList.add("active");
+
+                  // Adicionar active ao painel correspondente
+                  const targetPane = el.querySelector(
+                    `[data-content="${targetTab}"]`
+                  );
+                  if (targetPane) {
+                    targetPane.classList.add("active");
+                    console.log("Tab pane activated:", targetTab);
+                  }
+                },
+                { passive: false, capture: true }
+              );
+
+              // Adicionar também mousedown para garantir que funcione
+              button.addEventListener(
+                "mousedown",
+                (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                },
+                { passive: false, capture: true }
+              );
+            });
+          }
+        };
+
+        // Inicializar tabs
+        initTabs();
+
+        // Aplicar mudanças de tabs
+        (this as any).on(
+          "change:tab-title-1 change:tab-content-1 change:tab-title-2 change:tab-content-2 change:tab-title-3 change:tab-content-3 change:tabs-style change:tabs-position change:active-tab",
+          () => {
+            const title1 = (this as any).get("tab-title-1");
+            const content1 = (this as any).get("tab-content-1");
+            const title2 = (this as any).get("tab-title-2");
+            const content2 = (this as any).get("tab-content-2");
+            const title3 = (this as any).get("tab-title-3");
+            const content3 = (this as any).get("tab-content-3");
+            const style = (this as any).get("tabs-style");
+            const position = (this as any).get("tabs-position");
+            const activeTab = (this as any).get("active-tab");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Aplicar classes de estilo e posição
+              el.classList.remove("default", "pills", "underline", "card");
+              el.classList.remove("top", "left", "right");
+              if (style && style !== "default") el.classList.add(style);
+              if (position && position !== "top") el.classList.add(position);
+
+              // Atualizar títulos e conteúdos
+              const tabButtons = el.querySelectorAll(".tab-button span");
+              const tabContents = el.querySelectorAll(
+                ".tab-content-wrapper h3"
+              );
+
+              if (tabButtons[0] && title1) tabButtons[0].textContent = title1;
+              if (tabContents[0] && content1)
+                tabContents[0].textContent = content1;
+              if (tabButtons[1] && title2) tabButtons[1].textContent = title2;
+              if (tabContents[1] && content2)
+                tabContents[1].textContent = content2;
+              if (tabButtons[2] && title3) tabButtons[2].textContent = title3;
+              if (tabContents[2] && content3)
+                tabContents[2].textContent = content3;
+
+              // Re-inicializar tabs após mudanças
+              setTimeout(initTabs, 100);
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para counter customizado
+  editor.DomComponents.addType("custom-counter", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["counter-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-contador",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do contador",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "counter-title",
+            label: "Título do Contador",
+            placeholder: "Contador Interativo",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "initial-value",
+            label: "Valor Inicial",
+            placeholder: "0",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "min-value",
+            label: "Valor Mínimo",
+            placeholder: "0",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "max-value",
+            label: "Valor Máximo",
+            placeholder: "100",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "step-value",
+            label: "Incremento/Decremento",
+            placeholder: "1",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "counter-style",
+            label: "Estilo do Contador",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "minimal", name: "Minimalista" },
+              { value: "card", name: "Estilo Card" },
+              { value: "circular", name: "Circular" },
+            ],
+          },
+          {
+            type: "select",
+            name: "counter-size",
+            label: "Tamanho do Contador",
+            changeProp: 1,
+            options: [
+              { value: "small", name: "Pequeno" },
+              { value: "medium", name: "Médio" },
+              { value: "large", name: "Grande" },
+            ],
+          },
+          {
+            type: "checkbox",
+            name: "show-reset",
+            label: "Mostrar Botão Reset",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-decrease",
+            label: "Mostrar Botão Diminuir",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-increase",
+            label: "Mostrar Botão Aumentar",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // JavaScript para counter
+        const initCounter = () => {
+          const view = (this as any).getView();
+          if (view) {
+            const el = view.el;
+            const buttons = el.querySelectorAll(".counter-btn");
+            const valueElement = el.querySelector(
+              ".counter-value"
+            ) as HTMLElement;
+
+            let currentValue = parseInt(el.getAttribute("data-counter") || "0");
+            if (valueElement)
+              valueElement.textContent = currentValue.toString();
+
+            buttons.forEach((button: HTMLElement) => {
+              button.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const action = button.getAttribute("data-action");
+                if (!action) return;
+
+                const minValue = parseInt(
+                  el.getAttribute("data-min-value") || "0"
+                );
+                const maxValue = parseInt(
+                  el.getAttribute("data-max-value") || "100"
+                );
+
+                switch (action) {
+                  case "increase":
+                    if (currentValue < maxValue) {
+                      currentValue++;
+                    }
+                    break;
+                  case "decrease":
+                    if (currentValue > minValue) {
+                      currentValue--;
+                    }
+                    break;
+                  case "reset":
+                    currentValue = parseInt(
+                      el.getAttribute("data-initial-value") || "0"
+                    );
+                    break;
+                }
+
+                if (valueElement)
+                  valueElement.textContent = currentValue.toString();
+                el.setAttribute("data-counter", currentValue.toString());
+              });
+            });
+          }
+        };
+
+        // Inicializar counter
+        initCounter();
+
+        // Aplicar mudanças de counter
+        (this as any).on(
+          "change:counter-title change:initial-value change:counter-style change:counter-size change:show-reset change:show-decrease change:show-increase change:min-value change:max-value",
+          () => {
+            const counterTitle = (this as any).get("counter-title");
+            const initialValue = (this as any).get("initial-value");
+            const style = (this as any).get("counter-style");
+            const size = (this as any).get("counter-size");
+            const showReset = (this as any).get("show-reset");
+            const showDecrease = (this as any).get("show-decrease");
+            const showIncrease = (this as any).get("show-increase");
+            const minValue = (this as any).get("min-value");
+            const maxValue = (this as any).get("max-value");
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Aplicar classes de estilo e tamanho
+              el.classList.remove("default", "minimal", "card", "circular");
+              el.classList.remove("small", "medium", "large");
+              if (style && style !== "default") el.classList.add(style);
+              if (size && size !== "medium") el.classList.add(size);
+
+              // Atualizar título e valor inicial
+              const titleEl = el.querySelector(".counter-title");
+              const valueEl = el.querySelector(".counter-value");
+              if (titleEl && counterTitle) titleEl.textContent = counterTitle;
+              if (valueEl && initialValue) {
+                valueEl.textContent = initialValue.toString();
+                el.setAttribute("data-counter", initialValue.toString());
+                el.setAttribute("data-initial-value", initialValue.toString());
+              }
+
+              // Atualizar valores min/max
+              if (minValue)
+                el.setAttribute("data-min-value", minValue.toString());
+              if (maxValue)
+                el.setAttribute("data-max-value", maxValue.toString());
+
+              // Mostrar/ocultar botões
+              const resetBtn = el.querySelector(".counter-reset");
+              const decreaseBtn = el.querySelector(".counter-decrease");
+              const increaseBtn = el.querySelector(".counter-increase");
+
+              if (resetBtn) resetBtn.style.display = showReset ? "" : "none";
+              if (decreaseBtn)
+                decreaseBtn.style.display = showDecrease ? "" : "none";
+              if (increaseBtn)
+                increaseBtn.style.display = showIncrease ? "" : "none";
+
+              // Re-inicializar counter após mudanças
+              setTimeout(initCounter, 100);
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para testimonial customizado
+  editor.DomComponents.addType("custom-testimonial", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["testimonial-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meus-depoimentos",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título dos depoimentos",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "testimonial-title",
+            label: "Título da Seção",
+            placeholder: "O que nossos clientes dizem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "testimonial-subtitle",
+            label: "Subtítulo da Seção",
+            placeholder:
+              "Depoimentos reais de pessoas que confiam em nossos serviços",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "testimonial-layout",
+            label: "Layout dos Depoimentos",
+            changeProp: 1,
+            options: [
+              { value: "grid", name: "Grid (3 colunas)" },
+              { value: "carousel", name: "Carrossel" },
+              { value: "list", name: "Lista Vertical" },
+              { value: "single", name: "Depoimento Único" },
+            ],
+          },
+          {
+            type: "select",
+            name: "testimonial-style",
+            label: "Estilo dos Depoimentos",
+            changeProp: 1,
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "card", name: "Estilo Card" },
+              { value: "minimal", name: "Minimalista" },
+              { value: "quote", name: "Estilo Citação" },
+            ],
+          },
+          {
+            type: "checkbox",
+            name: "show-ratings",
+            label: "Mostrar Avaliações (Estrelas)",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-avatars",
+            label: "Mostrar Avatares",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-quotes",
+            label: "Mostrar Ícones de Citação",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "author-1-name",
+            label: "Nome do Autor 1",
+            placeholder: "Maria Silva",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "author-1-role",
+            label: "Cargo do Autor 1",
+            placeholder: "CEO, TechCorp",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "author-1-avatar",
+            label: "Avatar do Autor 1",
+            placeholder:
+              "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=64&h=64&fit=crop&crop=face",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "testimonial-1-text",
+            label: "Texto do Depoimento 1",
+            placeholder:
+              "Excelente serviço! A equipe foi muito profissional...",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "testimonial-1-rating",
+            label: "Avaliação do Depoimento 1 (1-5)",
+            placeholder: "5",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar mudanças de testimonial
+        (this as any).on(
+          "change:testimonial-title change:testimonial-subtitle change:testimonial-layout change:testimonial-style change:show-ratings change:show-avatars change:show-quotes change:author-1-name change:author-1-role change:author-1-avatar change:testimonial-1-text change:testimonial-1-rating",
+          () => {
+            const testimonialTitle = (this as any).get("testimonial-title");
+            const testimonialSubtitle = (this as any).get(
+              "testimonial-subtitle"
+            );
+            const layout = (this as any).get("testimonial-layout");
+            const style = (this as any).get("testimonial-style");
+            const showRatings = (this as any).get("show-ratings");
+            const showAvatars = (this as any).get("show-avatars");
+            const showQuotes = (this as any).get("show-quotes");
+            const author1Name = (this as any).get("author-1-name");
+            const author1Role = (this as any).get("author-1-role");
+            const author1Avatar = (this as any).get("author-1-avatar");
+            const testimonial1Text = (this as any).get("testimonial-1-text");
+            const testimonial1Rating = (this as any).get(
+              "testimonial-1-rating"
+            );
+
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Aplicar classes de layout e estilo
+              el.classList.remove("grid", "carousel", "list", "single");
+              el.classList.remove("default", "card", "minimal", "quote");
+              if (layout && layout !== "grid") el.classList.add(layout);
+              if (style && style !== "default") el.classList.add(style);
+
+              // Atualizar título e subtítulo
+              const titleEl = el.querySelector(".testimonial-title");
+              const subtitleEl = el.querySelector(".testimonial-subtitle");
+              if (titleEl && testimonialTitle)
+                titleEl.textContent = testimonialTitle;
+              if (subtitleEl && testimonialSubtitle)
+                subtitleEl.textContent = testimonialSubtitle;
+
+              // Atualizar primeiro depoimento
+              const firstCard = el.querySelector(".testimonial-card");
+              if (firstCard) {
+                const textEl = firstCard.querySelector(".testimonial-text");
+                const nameEl = firstCard.querySelector(".author-name");
+                const roleEl = firstCard.querySelector(".author-role");
+                const avatarEl = firstCard.querySelector(".author-avatar img");
+                const ratingEl = firstCard.querySelector(".rating");
+
+                if (textEl && testimonial1Text)
+                  textEl.textContent = testimonial1Text;
+                if (nameEl && author1Name) nameEl.textContent = author1Name;
+                if (roleEl && author1Role) roleEl.textContent = author1Role;
+                if (avatarEl && author1Avatar) avatarEl.src = author1Avatar;
+
+                // Mostrar/ocultar elementos
+                if (ratingEl)
+                  ratingEl.style.display = showRatings ? "" : "none";
+                if (avatarEl)
+                  avatarEl.style.display = showAvatars ? "" : "none";
+                const quoteIcon = firstCard.querySelector(".quote-icon");
+                if (quoteIcon)
+                  quoteIcon.style.display = showQuotes ? "" : "none";
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para Bootstrap Grid
+  editor.DomComponents.addType("custom-bootstrap-grid", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-grid-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-grid",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do grid",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "container-size",
+            label: "Tamanho do Container",
+            options: [
+              { value: "fluid", name: "Fluido (100%)" },
+              { value: "sm", name: "Pequeno (540px)" },
+              { value: "md", name: "Médio (720px)" },
+              { value: "lg", name: "Grande (960px)" },
+              { value: "xl", name: "Extra Grande (1140px)" },
+              { value: "xxl", name: "XXL (1320px)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "grid-columns",
+            label: "Número de Colunas",
+            options: [
+              { value: "3", name: "3 Colunas" },
+              { value: "2", name: "2 Colunas" },
+              { value: "4", name: "4 Colunas" },
+              { value: "6", name: "6 Colunas" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Card
+  editor.DomComponents.addType("custom-bootstrap-card", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-card-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-card",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do card",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "card-title",
+            label: "Título do Card",
+            placeholder: "Título do Card",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "card-text",
+            label: "Texto do Card",
+            placeholder: "Este é um exemplo de card Bootstrap...",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "card-style",
+            label: "Estilo do Card",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "outline", name: "Contorno" },
+              { value: "elevated", name: "Elevado" },
+              { value: "flat", name: "Plano" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "card-color",
+            label: "Cor do Card",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Form
+  editor.DomComponents.addType("custom-bootstrap-form", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-form-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-formulario",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do formulário",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "form-title",
+            label: "Título do Formulário",
+            placeholder: "Entre em Contato",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "form-style",
+            label: "Estilo do Formulário",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "horizontal", name: "Horizontal" },
+              { value: "inline", name: "Inline" },
+              { value: "floating", name: "Floating Labels" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "enable-validation",
+            label: "Habilitar Validação",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Navbar
+  editor.DomComponents.addType("custom-bootstrap-navbar", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-navbar-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-navbar",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da navbar",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "brand-text",
+            label: "Texto da Marca",
+            placeholder: "Meu Site",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "navbar-style",
+            label: "Estilo da Navbar",
+            options: [
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "navbar-position",
+            label: "Posição da Navbar",
+            options: [
+              { value: "static", name: "Estática" },
+              { value: "fixed", name: "Fixa" },
+              { value: "sticky", name: "Sticky" },
+              { value: "transparent", name: "Transparente" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-search",
+            label: "Mostrar Campo de Busca",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Alert
+  editor.DomComponents.addType("custom-bootstrap-alert", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-alert-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-alert",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do alert",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "alert-title",
+            label: "Título do Alert",
+            placeholder: "Informação!",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "alert-message",
+            label: "Mensagem do Alert",
+            placeholder: "Esta é uma mensagem de alerta Bootstrap...",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "alert-type",
+            label: "Tipo do Alert",
+            options: [
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "secondary", name: "Secundário (Cinza)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "dismissible",
+            label: "Permitir Fechar",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // JavaScript global para modais Bootstrap (funciona no editor e preview)
+  const initBootstrapModals = () => {
+    // Função para abrir modal
+    const openModal = (modalId: string) => {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = "block";
+        modal.classList.add("show");
+        document.body.classList.add("modal-open");
+
+        // Adicionar backdrop
+        const existingBackdrop = document.getElementById("modal-backdrop");
+        if (existingBackdrop) {
+          existingBackdrop.remove();
+        }
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "modal-backdrop fade show";
+        backdrop.id = "modal-backdrop";
+        backdrop.onclick = () => closeModal(modalId);
+        document.body.appendChild(backdrop);
+
+        // Foco no modal
+        setTimeout(() => {
+          const focusableElement = modal.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableElement) {
+            (focusableElement as HTMLElement).focus();
+          }
+        }, 100);
+      }
+    };
+
+    // Função para fechar modal
+    const closeModal = (modalId: string) => {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = "none";
+        modal.classList.remove("show");
+        document.body.classList.remove("modal-open");
+
+        // Remover backdrop
+        const backdrop = document.getElementById("modal-backdrop");
+        if (backdrop) {
+          backdrop.remove();
+        }
+      }
+    };
+
+    // Event delegation para botões de abrir modal
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      const triggerBtn = target.closest('[data-bs-toggle="modal"]');
+
+      if (triggerBtn) {
+        const modalId = triggerBtn
+          .getAttribute("data-bs-target")
+          ?.replace("#", "");
+        if (modalId) {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal(modalId);
+        }
+      }
+
+      // Botões de fechar modal
+      const closeBtn = target.closest('[data-bs-dismiss="modal"]');
+      if (closeBtn) {
+        const modal = closeBtn.closest(".modal");
+        if (modal) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeModal(modal.id);
+        }
+      }
+
+      // Fechar ao clicar no backdrop
+      if (target.classList.contains("modal")) {
+        closeModal(target.id);
+      }
+    });
+
+    // Fechar com ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const openModal = document.querySelector(".modal.show");
+        if (openModal) {
+          closeModal(openModal.id);
+        }
+      }
+    });
+  };
+
+  // Inicializar modais Bootstrap
+  initBootstrapModals();
+
+  // Traits para Bootstrap Modal
+  editor.DomComponents.addType("custom-bootstrap-modal", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-modal-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-modal",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do modal",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "modal-title",
+            label: "Título do Modal",
+            placeholder: "Título do Modal",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "modal-content",
+            label: "Conteúdo do Modal",
+            placeholder: "Este é o conteúdo do modal Bootstrap...",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "button-text",
+            label: "Texto do Botão",
+            placeholder: "Abrir Modal",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "modal-size",
+            label: "Tamanho do Modal",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "sm", name: "Pequeno" },
+              { value: "lg", name: "Grande" },
+              { value: "xl", name: "Extra Grande" },
+              { value: "fullscreen", name: "Tela Cheia" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "backdrop",
+            label: "Backdrop (Fundo Escuro)",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Adicionar funcionalidade JavaScript do modal
+        const setupModal = () => {
+          try {
+            const view = (this as any).getView();
+            if (!view) {
+              console.log("No view found for modal");
+              return;
+            }
+
+            const el = view.el;
+            if (!el) {
+              console.log("No element found for modal");
+              return;
+            }
+
+            const modal = el.querySelector(".modal");
+            const triggerBtn = el.querySelector('[data-bs-toggle="modal"]');
+            const closeBtns = el.querySelectorAll('[data-bs-dismiss="modal"]');
+
+            console.log("Modal elements found:", {
+              modal: !!modal,
+              triggerBtn: !!triggerBtn,
+              closeBtns: closeBtns.length,
+            });
+
+            if (modal && triggerBtn) {
+              // Remover event listeners existentes para evitar duplicação
+              const newTriggerBtn = triggerBtn.cloneNode(true);
+              triggerBtn.parentNode.replaceChild(newTriggerBtn, triggerBtn);
+
+              // Função para abrir modal
+              const openModal = (e: Event) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Modal opening..."); // Debug
+
+                modal.style.display = "block";
+                modal.classList.add("show");
+                document.body.classList.add("modal-open");
+
+                // Adicionar backdrop
+                const existingBackdrop =
+                  document.getElementById("modal-backdrop");
+                if (existingBackdrop) {
+                  existingBackdrop.remove();
+                }
+
+                const backdrop = document.createElement("div");
+                backdrop.className = "modal-backdrop fade show";
+                backdrop.id = "modal-backdrop";
+                document.body.appendChild(backdrop);
+
+                // Foco no modal
+                setTimeout(() => {
+                  const focusableElement = modal.querySelector(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                  );
+                  if (focusableElement) {
+                    (focusableElement as HTMLElement).focus();
+                  }
+                }, 100);
+              };
+
+              // Função para fechar modal
+              const closeModal = () => {
+                console.log("Modal closing..."); // Debug
+                modal.style.display = "none";
+                modal.classList.remove("show");
+                document.body.classList.remove("modal-open");
+
+                // Remover backdrop
+                const backdrop = document.getElementById("modal-backdrop");
+                if (backdrop) {
+                  backdrop.remove();
+                }
+              };
+
+              // Event listeners
+              newTriggerBtn.addEventListener("click", openModal);
+              console.log("Event listener added to trigger button");
+
+              closeBtns.forEach((btn: Element) => {
+                btn.addEventListener("click", closeModal);
+              });
+
+              // Fechar ao clicar no backdrop
+              modal.addEventListener("click", (e: Event) => {
+                if (e.target === modal) {
+                  closeModal();
+                }
+              });
+
+              // Fechar com ESC
+              const handleEscape = (e: KeyboardEvent) => {
+                if (e.key === "Escape" && modal.classList.contains("show")) {
+                  closeModal();
+                }
+              };
+
+              document.addEventListener("keydown", handleEscape);
+
+              // Cleanup function
+              return () => {
+                document.removeEventListener("keydown", handleEscape);
+              };
+            } else {
+              console.log("Modal or trigger button not found");
+            }
+          } catch (error) {
+            console.error("Error setting up modal:", error);
+          }
+        };
+
+        // Setup inicial com delay para garantir que o DOM esteja pronto
+        setTimeout(() => {
+          setupModal();
+        }, 100);
+
+        // Re-setup quando o componente for atualizado
+        (this as any).on("change:component:update", () => {
+          setTimeout(() => {
+            setupModal();
+          }, 100);
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Badge
+  editor.DomComponents.addType("custom-bootstrap-badge", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-badge-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-badge",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do badge",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "badge-text",
+            label: "Texto do Badge",
+            placeholder: "Novo",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "badge-color",
+            label: "Cor do Badge",
+            options: [
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "secondary", name: "Secundário (Cinza)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Breadcrumb
+  editor.DomComponents.addType("custom-bootstrap-breadcrumb", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-breadcrumb-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-breadcrumb",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do breadcrumb",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-1-text",
+            label: "Item 1 - Texto",
+            placeholder: "Início",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-2-text",
+            label: "Item 2 - Texto",
+            placeholder: "Categoria",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-3-text",
+            label: "Item 3 - Texto (Ativo)",
+            placeholder: "Página Atual",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "breadcrumb-style",
+            label: "Estilo do Breadcrumb",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Dropdown
+  editor.DomComponents.addType("custom-bootstrap-dropdown", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-dropdown-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-dropdown",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do dropdown",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "button-text",
+            label: "Texto do Botão",
+            placeholder: "Menu Dropdown",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-1-text",
+            label: "Item 1 - Texto",
+            placeholder: "Ação 1",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-2-text",
+            label: "Item 2 - Texto",
+            placeholder: "Ação 2",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-3-text",
+            label: "Item 3 - Texto",
+            placeholder: "Ação 3",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-style",
+            label: "Estilo do Botão",
+            options: [
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "secondary", name: "Secundário (Cinza)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap List Group
+  editor.DomComponents.addType("custom-bootstrap-listgroup", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-listgroup-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-listgroup",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da list group",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-1-text",
+            label: "Item 1 - Texto",
+            placeholder: "Item Ativo",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-2-text",
+            label: "Item 2 - Texto",
+            placeholder: "Segundo item",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-3-text",
+            label: "Item 3 - Texto",
+            placeholder: "Terceiro item",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-4-text",
+            label: "Item 4 - Texto",
+            placeholder: "Item Desabilitado",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "item-5-text",
+            label: "Item 5 - Texto",
+            placeholder: "Quinto item",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "listgroup-style",
+            label: "Estilo da List Group",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "secondary", name: "Secundário (Cinza)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para Bootstrap Table
+  editor.DomComponents.addType("custom-bootstrap-table", {
+    extend: "text",
+    model: {
+      defaults: {
+        tagName: "div",
+        classes: ["bootstrap-table-widget"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-tabela",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da tabela",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "col-1-header",
+            label: "Cabeçalho Coluna 1",
+            placeholder: "#",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "col-2-header",
+            label: "Cabeçalho Coluna 2",
+            placeholder: "Nome",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "col-3-header",
+            label: "Cabeçalho Coluna 3",
+            placeholder: "Email",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "col-4-header",
+            label: "Cabeçalho Coluna 4",
+            placeholder: "Cargo",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "col-5-header",
+            label: "Cabeçalho Coluna 5",
+            placeholder: "Ações",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "table-style",
+            label: "Estilo da Tabela",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "primary", name: "Primário (Azul)" },
+              { value: "secondary", name: "Secundário (Cinza)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+              { value: "light", name: "Claro" },
+              { value: "dark", name: "Escuro" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "striped",
+            label: "Listras Alternadas",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "hover",
+            label: "Efeito Hover",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "responsive",
+            label: "Responsiva",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits para botão interativo específico
+  editor.DomComponents.addType("interactive-button", {
+    extend: "button",
+    model: {
+      defaults: {
+        tagName: "button",
+        classes: ["interactive-button"],
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-botao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do botão",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "button-text",
+            label: "Texto do Botão",
+            placeholder: "Clique Aqui",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-style",
+            label: "Estilo do Botão",
+            options: [
+              { value: "default", name: "Padrão (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "outline", name: "Contorno" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-size",
+            label: "Tamanho do Botão",
+            options: [
+              { value: "small", name: "Pequeno" },
+              { value: "medium", name: "Médio" },
+              { value: "large", name: "Grande" },
+              { value: "xlarge", name: "Extra Grande" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-type",
+            label: "Tipo de Ação",
+            options: [
+              { value: "link", name: "Link" },
+              { value: "submit", name: "Enviar Formulário" },
+              { value: "custom", name: "JavaScript Personalizado" },
+              { value: "scroll", name: "Rolar para Seção" },
+              { value: "modal", name: "Abrir Modal" },
+              { value: "copy", name: "Copiar Texto" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "URL (se tipo Link)",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "scroll-target",
+            label: "ID da Seção (se tipo Scroll)",
+            placeholder: "#minha-secao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "modal-target",
+            label: "ID do Modal (se tipo Modal)",
+            placeholder: "#meu-modal",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "copy-text",
+            label: "Texto para Copiar (se tipo Copy)",
+            placeholder: "Texto a ser copiado",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "onclick",
+            label: "JavaScript Personalizado",
+            placeholder: 'alert("Olá!")',
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "disabled",
+            label: "Desabilitado",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "loading",
+            label: "Estado de Carregamento",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "icon",
+            label: "Ícone (Font Awesome)",
+            placeholder: "fas fa-home",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "icon-position",
+            label: "Posição do Ícone",
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "right", name: "Direita" },
+              { value: "top", name: "Acima" },
+              { value: "bottom", name: "Abaixo" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "data-custom",
+            label: "Atributo Data",
+            placeholder: "valor-personalizado",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+
+            // Remover estilo anterior se existir
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+
+            // Adicionar novo estilo
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar ações quando os traits forem alterados
+        (this as any).on(
+          "change:button-type change:href change:onclick change:scroll-target change:modal-target change:copy-text change:button-text change:button-style change:button-size change:disabled change:loading change:icon change:icon-position",
+          () => {
+            const buttonType = (this as any).get("button-type");
+            const href = (this as any).get("href");
+            const onclick = (this as any).get("onclick");
+            const scrollTarget = (this as any).get("scroll-target");
+            const modalTarget = (this as any).get("modal-target");
+            const copyText = (this as any).get("copy-text");
+            const buttonText = (this as any).get("button-text");
+            const buttonStyle = (this as any).get("button-style");
+            const buttonSize = (this as any).get("button-size");
+            const disabled = (this as any).get("disabled");
+            const loading = (this as any).get("loading");
+
+            let action = "";
+
+            switch (buttonType) {
+              case "link":
+                action = `window.location.href = '${href}'`;
+                break;
+              case "scroll":
+                action = `document.querySelector('${scrollTarget}').scrollIntoView({ behavior: 'smooth' })`;
+                break;
+              case "modal":
+                action = `document.querySelector('${modalTarget}').style.display = 'block'`;
+                break;
+              case "copy":
+                action = `navigator.clipboard.writeText('${copyText}').then(() => alert('Texto copiado!'))`;
+                break;
+              case "custom":
+                action = onclick;
+                break;
+              case "submit":
+                action = `this.closest('form')?.submit()`;
+                break;
+            }
+
+            if (action) {
+              (this as any).set("onclick", action);
+            }
+
+            // Aplicar texto do botão
+            if (buttonText) {
+              const view = (this as any).getView();
+              if (view) {
+                const textElement = view.el.querySelector(".button-text");
+                if (textElement) {
+                  textElement.textContent = buttonText;
+                }
+              }
+            }
+
+            // Aplicar classes de estilo e tamanho
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Remover classes antigas
+              el.classList.remove(
+                "success",
+                "danger",
+                "outline",
+                "warning",
+                "info"
+              );
+              el.classList.remove("small", "medium", "large", "xlarge");
+
+              // Aplicar novo estilo
+              if (buttonStyle && buttonStyle !== "default") {
+                el.classList.add(buttonStyle);
+              }
+
+              // Aplicar novo tamanho
+              if (buttonSize && buttonSize !== "medium") {
+                el.classList.add(buttonSize);
+              }
+
+              // Aplicar estado desabilitado
+              if (disabled) {
+                el.disabled = true;
+                el.classList.add("disabled");
+              } else {
+                el.disabled = false;
+                el.classList.remove("disabled");
+              }
+
+              // Aplicar estado de carregamento
+              if (loading) {
+                el.classList.add("loading");
+              } else {
+                el.classList.remove("loading");
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para botões
+  editor.DomComponents.addType("button", {
+    extend: "button",
+    model: {
+      defaults: {
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-botao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do botão",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "button-text",
+            label: "Texto do Botão",
+            placeholder: "Clique Aqui",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-style",
+            label: "Estilo do Botão",
+            options: [
+              { value: "default", name: "Padrão (Azul)" },
+              { value: "success", name: "Sucesso (Verde)" },
+              { value: "danger", name: "Perigo (Vermelho)" },
+              { value: "outline", name: "Contorno" },
+              { value: "warning", name: "Aviso (Amarelo)" },
+              { value: "info", name: "Info (Ciano)" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-size",
+            label: "Tamanho do Botão",
+            options: [
+              { value: "small", name: "Pequeno" },
+              { value: "medium", name: "Médio" },
+              { value: "large", name: "Grande" },
+              { value: "xlarge", name: "Extra Grande" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "onclick",
+            label: "Ação do Botão",
+            placeholder: 'window.location.href = "https://exemplo.com"',
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-type",
+            label: "Tipo de Ação",
+            options: [
+              { value: "link", name: "Link" },
+              { value: "submit", name: "Enviar Formulário" },
+              { value: "custom", name: "JavaScript Personalizado" },
+              { value: "scroll", name: "Rolar para Seção" },
+              { value: "modal", name: "Abrir Modal" },
+              { value: "copy", name: "Copiar Texto" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "URL (se tipo Link)",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "scroll-target",
+            label: "ID da Seção (se tipo Scroll)",
+            placeholder: "#minha-secao",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "modal-target",
+            label: "ID do Modal (se tipo Modal)",
+            placeholder: "#meu-modal",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "copy-text",
+            label: "Texto para Copiar (se tipo Copy)",
+            placeholder: "Texto a ser copiado",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "disabled",
+            label: "Desabilitado",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "loading",
+            label: "Estado de Carregamento",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "icon",
+            label: "Ícone (Font Awesome)",
+            placeholder: "fas fa-home",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "icon-position",
+            label: "Posição do Ícone",
+            options: [
+              { value: "left", name: "Esquerda" },
+              { value: "right", name: "Direita" },
+              { value: "top", name: "Acima" },
+              { value: "bottom", name: "Abaixo" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "data-custom",
+            label: "Atributo Data",
+            placeholder: "valor-personalizado",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+
+            // Remover estilo anterior se existir
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+
+            // Adicionar novo estilo
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+
+        // Aplicar ações quando os traits forem alterados
+        (this as any).on(
+          "change:button-type change:href change:onclick change:scroll-target change:modal-target change:copy-text change:button-text change:button-style change:button-size change:disabled change:loading change:icon change:icon-position",
+          () => {
+            const buttonType = (this as any).get("button-type");
+            const href = (this as any).get("href");
+            const onclick = (this as any).get("onclick");
+            const scrollTarget = (this as any).get("scroll-target");
+            const modalTarget = (this as any).get("modal-target");
+            const copyText = (this as any).get("copy-text");
+            const buttonText = (this as any).get("button-text");
+            const buttonStyle = (this as any).get("button-style");
+            const buttonSize = (this as any).get("button-size");
+            const disabled = (this as any).get("disabled");
+            const loading = (this as any).get("loading");
+
+            let action = "";
+
+            switch (buttonType) {
+              case "link":
+                action = `window.location.href = '${href}'`;
+                break;
+              case "scroll":
+                action = `document.querySelector('${scrollTarget}').scrollIntoView({ behavior: 'smooth' })`;
+                break;
+              case "modal":
+                action = `document.querySelector('${modalTarget}').style.display = 'block'`;
+                break;
+              case "copy":
+                action = `navigator.clipboard.writeText('${copyText}').then(() => alert('Texto copiado!'))`;
+                break;
+              case "custom":
+                action = onclick;
+                break;
+              case "submit":
+                action = `this.closest('form')?.submit()`;
+                break;
+            }
+
+            if (action) {
+              (this as any).set("onclick", action);
+            }
+
+            // Aplicar texto do botão
+            if (buttonText) {
+              const view = (this as any).getView();
+              if (view) {
+                const textElement = view.el.querySelector(".button-text");
+                if (textElement) {
+                  textElement.textContent = buttonText;
+                }
+              }
+            }
+
+            // Aplicar classes de estilo e tamanho
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
+
+              // Remover classes antigas
+              el.classList.remove(
+                "success",
+                "danger",
+                "outline",
+                "warning",
+                "info"
+              );
+              el.classList.remove("small", "medium", "large", "xlarge");
+
+              // Aplicar novo estilo
+              if (buttonStyle && buttonStyle !== "default") {
+                el.classList.add(buttonStyle);
+              }
+
+              // Aplicar novo tamanho
+              if (buttonSize && buttonSize !== "medium") {
+                el.classList.add(buttonSize);
+              }
+
+              // Aplicar estado desabilitado
+              if (disabled) {
+                el.disabled = true;
+                el.classList.add("disabled");
+              } else {
+                el.disabled = false;
+                el.classList.remove("disabled");
+              }
+
+              // Aplicar estado de carregamento
+              if (loading) {
+                el.classList.add("loading");
+              } else {
+                el.classList.remove("loading");
+              }
+            }
+          }
+        );
+      },
+    },
+  });
+
+  // Traits para imagens
+  editor.DomComponents.addType("image", {
+    extend: "image",
+    model: {
+      defaults: {
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "minha-imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "src",
+            label: "URL da Imagem",
+            placeholder: "https://exemplo.com/imagem.jpg",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "alt",
+            label: "Texto Alternativo",
+            placeholder: "Descrição da imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título da imagem",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "Link da Imagem",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+
+            // Remover estilo anterior se existir
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+
+            // Adicionar novo estilo
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Traits globais para todos os elementos
+  editor.DomComponents.addType("default", {
+    extend: "default",
+    model: {
+      defaults: {
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-elemento",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do elemento",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { color: red; }",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "data-custom",
+            label: "Atributo Data",
+            placeholder: "valor-personalizado",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+
+            // Remover estilo anterior se existir
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+
+            // Adicionar novo estilo
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
+      },
+    },
+  });
+
+  // Sistema para aplicar ações de botões
+  editor.DomComponents.addType("button", {
+    extend: "button",
+    model: {
+      defaults: {
+        traits: [
+          {
+            type: "text",
+            name: "onclick",
+            label: "Ação do Botão",
+            placeholder: 'window.location.href = "https://exemplo.com"',
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "button-type",
+            label: "Tipo de Ação",
+            options: [
+              { value: "link", name: "Link" },
+              { value: "submit", name: "Enviar Formulário" },
+              { value: "custom", name: "JavaScript Personalizado" },
+              { value: "scroll", name: "Rolar para Seção" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "href",
+            label: "URL (se tipo Link)",
+            placeholder: "https://exemplo.com",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "scroll-target",
+            label: "ID da Seção (se tipo Scroll)",
+            placeholder: "#minha-secao",
+            changeProp: 1,
+          },
+        ],
+      },
+      init() {
+        // Aplicar ações quando os traits forem alterados
+        (this as any).on(
+          "change:button-type change:href change:onclick change:scroll-target",
+          () => {
+            const buttonType = (this as any).get("button-type");
+            const href = (this as any).get("href");
+            const onclick = (this as any).get("onclick");
+            const scrollTarget = (this as any).get("scroll-target");
+
+            let action = "";
+
+            switch (buttonType) {
+              case "link":
+                action = `window.location.href = '${href}'`;
+                break;
+              case "scroll":
+                action = `document.querySelector('${scrollTarget}').scrollIntoView({ behavior: 'smooth' })`;
+                break;
+              case "custom":
+                action = onclick;
+                break;
+              case "submit":
+                action = `this.closest('form')?.submit()`;
+                break;
+            }
+
+            if (action) {
+              (this as any).set("onclick", action);
+            }
+          }
+        );
+      },
+    },
+  });
+};
+
 const switchRightTab = (tab: string) => {
   const stylesContainer = document.getElementById("styles-container");
   const traitsContainer = document.getElementById("traits-container");
@@ -1589,6 +6323,9 @@ onMounted(async () => {
         console.log("Setting mobile device");
       },
     });
+
+    // Configurar sistema de traits customizados
+    setupCustomTraits(editor.value);
 
     // Configurar eventos para as abas
     const blocksTab = document.querySelector(".gjs-tab-blocks");

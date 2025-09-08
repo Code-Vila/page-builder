@@ -1,0 +1,285 @@
+/* Bootstrap Modal Block Styles */
+.bootstrap-modal-widget {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.bootstrap-modal-widget .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: 0;
+  display: none;
+}
+
+.bootstrap-modal-widget .modal.fade {
+  transition: opacity 0.15s linear;
+}
+
+.bootstrap-modal-widget .modal.fade:not(.show) {
+  opacity: 0;
+}
+
+.bootstrap-modal-widget .modal.show {
+  opacity: 1;
+}
+
+.bootstrap-modal-widget .modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 0.5rem;
+  pointer-events: none;
+  transform: translate(0, -50px);
+  transition: transform 0.3s ease-out;
+}
+
+.bootstrap-modal-widget .modal.show .modal-dialog {
+  transform: none;
+}
+
+.bootstrap-modal-widget .modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 1rem);
+}
+
+.bootstrap-modal-widget .modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  outline: 0;
+}
+
+.bootstrap-modal-widget .modal-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+  border-top-left-radius: calc(0.375rem - 1px);
+  border-top-right-radius: calc(0.375rem - 1px);
+}
+
+.bootstrap-modal-widget .modal-title {
+  margin-bottom: 0;
+  line-height: 1.5;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+.bootstrap-modal-widget .modal-body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 1rem;
+}
+
+.bootstrap-modal-widget .modal-body p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #212529;
+}
+
+.bootstrap-modal-widget .modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.75rem;
+  border-top: 1px solid #dee2e6;
+  border-bottom-right-radius: calc(0.375rem - 1px);
+  border-bottom-left-radius: calc(0.375rem - 1px);
+  gap: 0.5rem;
+}
+
+.bootstrap-modal-widget .btn-close {
+  box-sizing: content-box;
+  width: 1em;
+  height: 1em;
+  padding: 0.25em 0.25em;
+  color: #000;
+  background: transparent
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.5 3.5 1-1L8 8.5l6.5-6 1 1L9 9.5l6.5 6-1 1L8 10.5l-6.5 6-1-1L7 9.5.5 3.5Z'/%3e%3c/svg%3e")
+    center/1em auto no-repeat;
+  border: 0;
+  border-radius: 0.375rem;
+  opacity: 0.5;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.bootstrap-modal-widget .btn-close:hover {
+  color: #000;
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+.bootstrap-modal-widget .btn-close:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  opacity: 1;
+}
+
+.bootstrap-modal-widget .btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-modal-widget .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-modal-widget .btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.bootstrap-modal-widget .btn-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-modal-widget .btn-secondary:hover {
+  color: #fff;
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+/* Modal sizes */
+.bootstrap-modal-widget .modal-sm .modal-dialog {
+  max-width: 300px;
+}
+
+.bootstrap-modal-widget .modal-lg .modal-dialog {
+  max-width: 800px;
+}
+
+.bootstrap-modal-widget .modal-xl .modal-dialog {
+  max-width: 1140px;
+}
+
+/* Modal variations */
+.bootstrap-modal-widget.modal-fullscreen .modal-dialog {
+  width: 100vw;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+}
+
+.bootstrap-modal-widget.modal-fullscreen .modal-content {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.bootstrap-modal-widget.modal-scrollable .modal-body {
+  overflow-y: auto;
+}
+
+/* Modal backdrop */
+.bootstrap-modal-widget .modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9998;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5;
+}
+
+.bootstrap-modal-widget .modal-backdrop.fade {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+
+.bootstrap-modal-widget .modal-backdrop.show {
+  opacity: 0.5;
+}
+
+/* Body modal open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Responsive behavior */
+@media (min-width: 576px) {
+  .bootstrap-modal-widget .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+  }
+
+  .bootstrap-modal-widget .modal-dialog-centered {
+    min-height: calc(100% - 3.5rem);
+  }
+}
+
+@media (min-width: 992px) {
+  .bootstrap-modal-widget .modal-lg {
+    max-width: 800px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .bootstrap-modal-widget .modal-xl {
+    max-width: 1140px;
+  }
+}
+
+/* Modal animations */
+.bootstrap-modal-widget .modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out;
+  transform: translate(0, -50px);
+}
+
+.bootstrap-modal-widget .modal.show .modal-dialog {
+  transform: none;
+}
+
+.bootstrap-modal-widget .modal.fade .modal-dialog.modal-dialog-centered {
+  transform: translate(0, -50px);
+}
+
+.bootstrap-modal-widget .modal.show .modal-dialog.modal-dialog-centered {
+  transform: none;
+}
+
+/* JavaScript global para funcionar no preview */
+.bootstrap-modal-widget [data-bs-toggle="modal"] {
+  cursor: pointer;
+}
+
+.bootstrap-modal-widget [data-bs-dismiss="modal"] {
+  cursor: pointer;
+}

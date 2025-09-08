@@ -1,0 +1,184 @@
+.interactive-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  text-decoration: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.interactive-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+.interactive-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.button-text {
+  flex: 1;
+}
+
+.button-icon {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.interactive-button:hover .button-icon {
+  transform: translateX(4px);
+}
+
+/* Variações de estilo */
+.interactive-button.success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.interactive-button.success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.interactive-button.danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.interactive-button.danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.interactive-button.outline {
+  background: transparent;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  box-shadow: none;
+}
+
+.interactive-button.outline:hover {
+  background: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Tamanhos */
+.interactive-button.small {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.interactive-button.medium {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.interactive-button.large {
+  padding: 16px 32px;
+  font-size: 18px;
+}
+
+.interactive-button.xlarge {
+  padding: 20px 40px;
+  font-size: 20px;
+}
+
+/* Estados adicionais */
+.interactive-button.warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.interactive-button.warning:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.interactive-button.info {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.interactive-button.info:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+}
+
+/* Estado desabilitado */
+.interactive-button.disabled,
+.interactive-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.interactive-button.disabled:hover,
+.interactive-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Estado de carregamento */
+.interactive-button.loading {
+  position: relative;
+  color: transparent;
+}
+
+.interactive-button.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .interactive-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .interactive-button.small {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .interactive-button.large {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  .interactive-button.xlarge {
+    padding: 16px 32px;
+    font-size: 18px;
+  }
+}

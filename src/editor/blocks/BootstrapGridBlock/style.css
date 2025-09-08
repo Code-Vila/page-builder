@@ -1,0 +1,110 @@
+/* Bootstrap Grid Block Styles */
+.bootstrap-grid-widget {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.bootstrap-grid-widget .container-fluid {
+  max-width: 100%;
+  padding: 0 15px;
+}
+
+.bootstrap-grid-widget .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+
+.bootstrap-grid-widget .col-12,
+.bootstrap-grid-widget .col-md-6,
+.bootstrap-grid-widget .col-lg-4 {
+  position: relative;
+  width: 100%;
+  padding: 0 15px;
+  margin-bottom: 20px;
+}
+
+/* Responsive breakpoints */
+@media (min-width: 768px) {
+  .bootstrap-grid-widget .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 992px) {
+  .bootstrap-grid-widget .col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+  
+  .bootstrap-grid-widget .col-md-12.col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}
+
+.bootstrap-grid-widget .grid-item {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.bootstrap-grid-widget .grid-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.bootstrap-grid-widget .grid-item h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.bootstrap-grid-widget .grid-item p {
+  margin: 0;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+/* Grid variations */
+.bootstrap-grid-widget.grid-2-cols .col-lg-4 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.bootstrap-grid-widget.grid-4-cols .col-lg-4 {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.bootstrap-grid-widget.grid-6-cols .col-lg-4 {
+  flex: 0 0 16.666667%;
+  max-width: 16.666667%;
+}
+
+/* Container variations */
+.bootstrap-grid-widget.container-sm .container-fluid {
+  max-width: 540px;
+}
+
+.bootstrap-grid-widget.container-md .container-fluid {
+  max-width: 720px;
+}
+
+.bootstrap-grid-widget.container-lg .container-fluid {
+  max-width: 960px;
+}
+
+.bootstrap-grid-widget.container-xl .container-fluid {
+  max-width: 1140px;
+}
+
+.bootstrap-grid-widget.container-xxl .container-fluid {
+  max-width: 1320px;
+}

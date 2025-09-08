@@ -36,6 +36,8 @@
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  pointer-events: auto !important;
+  z-index: 10 !important;
 }
 
 .tab-button:hover {

@@ -1,0 +1,176 @@
+/* Bootstrap Breadcrumb Block Styles */
+.bootstrap-breadcrumb-widget {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  list-style: none;
+  background-color: #e9ecef;
+  border-radius: 0.375rem;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item + .breadcrumb-item {
+  padding-left: 0.5rem;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item + .breadcrumb-item::before {
+  display: inline-block;
+  padding-right: 0.5rem;
+  color: #6c757d;
+  content: var(--bs-breadcrumb-divider, "/");
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item a {
+  color: #0d6efd;
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item a:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item.active {
+  color: #6c757d;
+}
+
+/* Breadcrumb variations */
+.bootstrap-breadcrumb-widget.breadcrumb-light .breadcrumb {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dark .breadcrumb {
+  background-color: #212529;
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dark .breadcrumb-item a {
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dark .breadcrumb-item a:hover {
+  color: #adb5bd;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dark .breadcrumb-item.active {
+  color: #adb5bd;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dark .breadcrumb-item + .breadcrumb-item::before {
+  color: #adb5bd;
+}
+
+/* Breadcrumb sizes */
+.bootstrap-breadcrumb-widget.breadcrumb-sm .breadcrumb {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-lg .breadcrumb {
+  padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+}
+
+/* Breadcrumb separators */
+.bootstrap-breadcrumb-widget.breadcrumb-arrow .breadcrumb-item + .breadcrumb-item::before {
+  content: "→";
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-dot .breadcrumb-item + .breadcrumb-item::before {
+  content: "•";
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-pipe .breadcrumb-item + .breadcrumb-item::before {
+  content: "|";
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-chevron .breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+}
+
+/* Breadcrumb with icons */
+.bootstrap-breadcrumb-widget .breadcrumb-item .icon {
+  margin-right: 0.25rem;
+  font-size: 0.875em;
+}
+
+/* Breadcrumb responsive */
+@media (max-width: 576px) {
+  .bootstrap-breadcrumb-widget .breadcrumb {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .bootstrap-breadcrumb-widget .breadcrumb-item + .breadcrumb-item {
+    padding-left: 0;
+    padding-top: 0.25rem;
+  }
+  
+  .bootstrap-breadcrumb-widget .breadcrumb-item + .breadcrumb-item::before {
+    display: none;
+  }
+}
+
+/* Breadcrumb animations */
+.bootstrap-breadcrumb-widget .breadcrumb-item {
+  transition: all 0.15s ease-in-out;
+}
+
+.bootstrap-breadcrumb-widget .breadcrumb-item:hover {
+  transform: translateX(2px);
+}
+
+/* Breadcrumb custom colors */
+.bootstrap-breadcrumb-widget.breadcrumb-primary .breadcrumb {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-primary .breadcrumb-item a {
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-primary .breadcrumb-item a:hover {
+  color: #b3d7ff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-primary .breadcrumb-item.active {
+  color: #b3d7ff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-primary .breadcrumb-item + .breadcrumb-item::before {
+  color: #b3d7ff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-success .breadcrumb {
+  background-color: #198754;
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-success .breadcrumb-item a {
+  color: #fff;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-success .breadcrumb-item a:hover {
+  color: #b3e5b3;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-success .breadcrumb-item.active {
+  color: #b3e5b3;
+}
+
+.bootstrap-breadcrumb-widget.breadcrumb-success .breadcrumb-item + .breadcrumb-item::before {
+  color: #b3e5b3;
+}

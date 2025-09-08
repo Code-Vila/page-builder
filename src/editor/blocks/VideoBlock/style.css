@@ -1,6 +1,5 @@
 .video-widget {
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
   background: #000;
   border-radius: 12px;
@@ -10,7 +9,6 @@
 
 .video-placeholder {
   width: 100%;
-  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,4 +37,53 @@
 .video-placeholder small {
   opacity: 0.8;
   font-size: 14px;
+}
+
+/* Container de vídeo */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio por padrão */
+  overflow: hidden;
+}
+
+.video-container iframe,
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Tamanhos */
+.video-widget.small {
+  max-width: 400px;
+}
+
+.video-widget.medium {
+  max-width: 600px;
+}
+
+.video-widget.large {
+  max-width: 800px;
+}
+
+.video-widget.full {
+  max-width: 100%;
+}
+
+/* Proporções */
+.video-widget.aspect-16-9 .video-container {
+  padding-bottom: 56.25%; /* 16:9 */
+}
+
+.video-widget.aspect-4-3 .video-container {
+  padding-bottom: 75%; /* 4:3 */
+}
+
+.video-widget.aspect-1-1 .video-container {
+  padding-bottom: 100%; /* 1:1 */
 }

@@ -1,0 +1,240 @@
+/* Bootstrap Form Block Styles */
+.bootstrap-form-widget {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bootstrap-form-widget .form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+.bootstrap-form-widget .form-control {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  appearance: none;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-form-widget .form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.bootstrap-form-widget .form-control::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.bootstrap-form-widget .form-select {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  appearance: none;
+}
+
+.bootstrap-form-widget .form-select:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.bootstrap-form-widget .form-check {
+  display: block;
+  min-height: 1.5rem;
+  padding-left: 1.5em;
+  margin-bottom: 0.125rem;
+}
+
+.bootstrap-form-widget .form-check-input {
+  width: 1em;
+  height: 1em;
+  margin-top: 0.25em;
+  vertical-align: top;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  appearance: none;
+  color-adjust: exact;
+  border-radius: 0.25em;
+  transition: background-color 0.15s ease-in-out, background-position 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-form-widget .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+.bootstrap-form-widget .form-check-input:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.bootstrap-form-widget .form-check-label {
+  color: #212529;
+  cursor: pointer;
+}
+
+.bootstrap-form-widget .invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: #dc3545;
+}
+
+.bootstrap-form-widget .form-control.is-invalid,
+.bootstrap-form-widget .form-select.is-invalid,
+.bootstrap-form-widget .form-check-input.is-invalid {
+  border-color: #dc3545;
+}
+
+.bootstrap-form-widget .form-control.is-invalid:focus,
+.bootstrap-form-widget .form-select.is-invalid:focus,
+.bootstrap-form-widget .form-check-input.is-invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.bootstrap-form-widget .form-control.is-invalid ~ .invalid-feedback,
+.bootstrap-form-widget .form-select.is-invalid ~ .invalid-feedback,
+.bootstrap-form-widget .form-check-input.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+
+.bootstrap-form-widget .btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-form-widget .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-form-widget .btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.bootstrap-form-widget .btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-form-widget .btn-outline-secondary:hover {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-form-widget .mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.bootstrap-form-widget .d-grid {
+  display: grid !important;
+}
+
+.bootstrap-form-widget .gap-2 {
+  gap: 0.5rem !important;
+}
+
+.bootstrap-form-widget .d-md-flex {
+  display: flex !important;
+}
+
+.bootstrap-form-widget .justify-content-md-end {
+  justify-content: flex-end !important;
+}
+
+.bootstrap-form-widget .me-md-2 {
+  margin-right: 0.5rem !important;
+}
+
+/* Form variations */
+.bootstrap-form-widget.form-horizontal .form-label {
+  text-align: right;
+  padding-top: 0.375rem;
+  margin-bottom: 0;
+}
+
+.bootstrap-form-widget.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+.bootstrap-form-widget.form-floating .form-control {
+  height: calc(3.5rem + 2px);
+  line-height: 1.25;
+  padding-top: 1.625rem;
+  padding-bottom: 0.625rem;
+}
+
+.bootstrap-form-widget.form-floating .form-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: 1rem 0.75rem;
+  pointer-events: none;
+  border: 1px solid transparent;
+  transform-origin: 0 0;
+  transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.bootstrap-form-widget.form-floating .form-control:focus ~ .form-label,
+.bootstrap-form-widget.form-floating .form-control:not(:placeholder-shown) ~ .form-label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}

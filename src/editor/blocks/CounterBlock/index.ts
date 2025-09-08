@@ -19,68 +19,155 @@ export const CounterBlock = {
 };
 
 export const CounterComponent = (editor: any) => {
-  const componentType = "counter-component";
-
-  // Registrar o tipo de componente
-  editor.DomComponents.addType(componentType, {
+  editor.DomComponents.addType("counter", {
     isComponent: (el: HTMLElement) => el.classList?.contains("counter-widget"),
 
     model: {
       defaults: {
-        name: "Contador",
-        draggable: true,
-        droppable: false,
-        traits: [],
-        attributes: {
-          "data-counter": "0",
-          class: "counter-widget",
-        },
+        tagName: "div",
+        classes: ["counter-widget"],
         content: counterHTML,
+        traits: [
+          {
+            type: "text",
+            name: "id",
+            label: "ID",
+            placeholder: "meu-contador",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "title",
+            label: "Título",
+            placeholder: "Título do contador",
+            changeProp: 1,
+          },
+          {
+            type: "text",
+            name: "counter-title",
+            label: "Título do Contador",
+            placeholder: "Contador Interativo",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "initial-value",
+            label: "Valor Inicial",
+            placeholder: "0",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "min-value",
+            label: "Valor Mínimo",
+            placeholder: "0",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "max-value",
+            label: "Valor Máximo",
+            placeholder: "100",
+            changeProp: 1,
+          },
+          {
+            type: "number",
+            name: "step-value",
+            label: "Incremento/Decremento",
+            placeholder: "1",
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "counter-style",
+            label: "Estilo do Contador",
+            options: [
+              { value: "default", name: "Padrão" },
+              { value: "minimal", name: "Minimalista" },
+              { value: "card", name: "Estilo Card" },
+              { value: "circular", name: "Circular" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "select",
+            name: "counter-size",
+            label: "Tamanho do Contador",
+            options: [
+              { value: "small", name: "Pequeno" },
+              { value: "medium", name: "Médio" },
+              { value: "large", name: "Grande" },
+            ],
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-reset",
+            label: "Mostrar Botão Reset",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-decrease",
+            label: "Mostrar Botão Diminuir",
+            changeProp: 1,
+          },
+          {
+            type: "checkbox",
+            name: "show-increase",
+            label: "Mostrar Botão Aumentar",
+            changeProp: 1,
+          },
+          {
+            type: "textarea",
+            name: "custom-css",
+            label: "CSS Personalizado",
+            placeholder: ".minha-classe { border-radius: 8px; }",
+            changeProp: 1,
+          },
+        ],
         script: function () {
-          // Script que será executado quando o componente for renderizado
-          const initCounter = () => {
-            const widget = this as unknown as HTMLElement;
-            const buttons = widget.querySelectorAll(".counter-btn");
-            const valueElement = widget.querySelector(
-              ".counter-value"
-            ) as HTMLElement;
+          const widget = this as unknown as HTMLElement;
+          const buttons = widget.querySelectorAll(".counter-btn");
+          const valueElement = widget.querySelector(
+            ".counter-value"
+          ) as HTMLElement;
 
-            let currentValue = parseInt(
-              widget.getAttribute("data-counter") || "0"
-            );
-            valueElement.textContent = currentValue.toString();
+          let currentValue = parseInt(
+            widget.getAttribute("data-counter") || "0"
+          );
+          valueElement.textContent = currentValue.toString();
 
-            buttons.forEach((button) => {
-              button.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+          buttons.forEach((button) => {
+            button.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-                const action = (button as HTMLElement).getAttribute(
-                  "data-action"
-                );
-                if (!action) return;
+              const action = (button as HTMLElement).getAttribute(
+                "data-action"
+              );
+              if (!action) return;
 
-                switch (action) {
-                  case "increase":
-                    currentValue++;
-                    break;
-                  case "decrease":
-                    currentValue--;
-                    break;
-                  case "reset":
-                    currentValue = 0;
-                    break;
-                }
+              switch (action) {
+                case "increase":
+                  currentValue++;
+                  break;
+                case "decrease":
+                  currentValue--;
+                  break;
+                case "reset":
+                  currentValue = 0;
+                  break;
+              }
 
-                // Atualizar valor
-                valueElement.textContent = currentValue.toString();
-                widget.setAttribute("data-counter", currentValue.toString());
+              // Atualizar valor
+              valueElement.textContent = currentValue.toString();
+              widget.setAttribute("data-counter", currentValue.toString());
 
-                // Animação
-                animateCounterChange(valueElement, widget);
-              });
+              // Animação
+              animateCounterChange(valueElement, widget);
             });
-          };
+          });
 
           const animateCounterChange = (
             element: HTMLElement,
@@ -97,45 +184,76 @@ export const CounterComponent = (editor: any) => {
               widget.style.transform = "scale(1)";
             }, 300);
           };
-
-          // Inicializar quando o DOM estiver pronto
-          if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initCounter);
-          } else {
-            initCounter();
-          }
         },
       },
-    },
+      init() {
+        // Aplicar CSS personalizado quando o trait for alterado
+        (this as any).on("change:custom-css", (_model: any, value: string) => {
+          if (value && value.trim()) {
+            const componentId = (this as any).getId();
+            const customStyleId = `custom-css-${componentId}`;
+            const existingStyle = document.getElementById(customStyleId);
+            if (existingStyle) {
+              existingStyle.remove();
+            }
+            const style = document.createElement("style");
+            style.id = customStyleId;
+            style.textContent = `#${componentId} { ${value} }`;
+            document.head.appendChild(style);
+          }
+        });
 
-    view: {
-      events: {
-        click: "onClick",
-      },
+        // Aplicar mudanças de counter
+        (this as any).on(
+          "change:counter-title change:initial-value change:min-value change:max-value change:step-value change:counter-style change:counter-size change:show-reset change:show-decrease change:show-increase",
+          () => {
+            const title = (this as any).get("counter-title");
+            const initialValue = (this as any).get("initial-value");
+            const style = (this as any).get("counter-style");
+            const size = (this as any).get("counter-size");
+            const showReset = (this as any).get("show-reset");
+            const showDecrease = (this as any).get("show-decrease");
+            const showIncrease = (this as any).get("show-increase");
 
-      onClick(e: Event) {
-        const target = e.target as HTMLElement;
-        const button = target.closest(".counter-btn");
+            const view = (this as any).getView();
+            if (view) {
+              const el = view.el;
 
-        if (button) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-      },
+              // Aplicar classes de estilo e tamanho
+              el.classList.remove("default", "minimal", "card", "circular");
+              el.classList.remove("small", "medium", "large");
+              if (style && style !== "default") el.classList.add(style);
+              if (size && size !== "medium") el.classList.add(size);
 
-      onRender() {
-        // Garantir que o CSS seja aplicado
-        (this as any).el.classList.add("counter-widget");
+              // Atualizar título
+              const titleElement = el.querySelector(".counter-title");
+              if (titleElement && title) titleElement.textContent = title;
+
+              // Atualizar valor inicial
+              if (initialValue !== undefined) {
+                const valueElement = el.querySelector(".counter-value");
+                if (valueElement)
+                  valueElement.textContent = initialValue.toString();
+                el.setAttribute("data-counter", initialValue.toString());
+              }
+
+              // Mostrar/ocultar botões
+              const resetBtn = el.querySelector('[data-action="reset"]');
+              const decreaseBtn = el.querySelector('[data-action="decrease"]');
+              const increaseBtn = el.querySelector('[data-action="increase"]');
+
+              if (resetBtn)
+                resetBtn.style.display = showReset ? "block" : "none";
+              if (decreaseBtn)
+                decreaseBtn.style.display = showDecrease ? "block" : "none";
+              if (increaseBtn)
+                increaseBtn.style.display = showIncrease ? "block" : "none";
+            }
+          }
+        );
       },
     },
   });
-
-  // Registrar o bloco
-  editor.BlockManager.add("counter", CounterBlock);
-
-  // Adicionar CSS ao editor
-  editor.CssComposer.addRules(counterCSS);
 };
 
 // Exportar o CSS

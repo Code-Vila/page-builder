@@ -1,0 +1,191 @@
+/* Bootstrap Card Block Styles */
+.bootstrap-card-widget {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.bootstrap-card-widget .card {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.3s ease;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.bootstrap-card-widget .card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.bootstrap-card-widget .card-header {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.bootstrap-card-widget .card-header:first-child {
+  border-radius: calc(0.375rem - 1px) calc(0.375rem - 1px) 0 0;
+}
+
+.bootstrap-card-widget .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.bootstrap-card-widget .card-body {
+  flex: 1 1 auto;
+  padding: 1rem;
+}
+
+.bootstrap-card-widget .card-subtitle {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.bootstrap-card-widget .card-text {
+  margin-bottom: 1rem;
+  color: #212529;
+  line-height: 1.6;
+}
+
+.bootstrap-card-widget .card-footer {
+  padding: 0.75rem 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.bootstrap-card-widget .card-footer:last-child {
+  border-radius: 0 0 calc(0.375rem - 1px) calc(0.375rem - 1px);
+}
+
+/* Card variations */
+.bootstrap-card-widget.card-outline .card {
+  border: 2px solid #dee2e6;
+  box-shadow: none;
+}
+
+.bootstrap-card-widget.card-elevated .card {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.bootstrap-card-widget.card-flat .card {
+  border: none;
+  box-shadow: none;
+}
+
+/* Card sizes */
+.bootstrap-card-widget.card-sm .card-body {
+  padding: 0.5rem;
+}
+
+.bootstrap-card-widget.card-sm .card-header,
+.bootstrap-card-widget.card-sm .card-footer {
+  padding: 0.5rem;
+}
+
+.bootstrap-card-widget.card-lg .card-body {
+  padding: 2rem;
+}
+
+.bootstrap-card-widget.card-lg .card-header,
+.bootstrap-card-widget.card-lg .card-footer {
+  padding: 1.5rem;
+}
+
+/* Card colors */
+.bootstrap-card-widget.card-primary .card {
+  border-color: #0d6efd;
+}
+
+.bootstrap-card-widget.card-primary .card-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.bootstrap-card-widget.card-success .card {
+  border-color: #198754;
+}
+
+.bootstrap-card-widget.card-success .card-header {
+  background-color: #198754;
+  color: white;
+}
+
+.bootstrap-card-widget.card-danger .card {
+  border-color: #dc3545;
+}
+
+.bootstrap-card-widget.card-danger .card-header {
+  background-color: #dc3545;
+  color: white;
+}
+
+.bootstrap-card-widget.card-warning .card {
+  border-color: #ffc107;
+}
+
+.bootstrap-card-widget.card-warning .card-header {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.bootstrap-card-widget.card-info .card {
+  border-color: #0dcaf0;
+}
+
+.bootstrap-card-widget.card-info .card-header {
+  background-color: #0dcaf0;
+  color: #212529;
+}
+
+/* Button styles */
+.bootstrap-card-widget .btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-card-widget .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-card-widget .btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.bootstrap-card-widget .btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-card-widget .btn-outline-secondary:hover {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-card-widget .ms-2 {
+  margin-left: 0.5rem !important;
+}

@@ -1,0 +1,274 @@
+/* Bootstrap Dropdown Block Styles */
+.bootstrap-dropdown-widget {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.bootstrap-dropdown-widget .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.bootstrap-dropdown-widget .dropdown-toggle {
+  white-space: nowrap;
+}
+
+.bootstrap-dropdown-widget .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+  display: none;
+  min-width: 10rem;
+  padding: 0.5rem 0;
+  margin: 0;
+  font-size: 1rem;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+}
+
+.bootstrap-dropdown-widget .dropdown-menu.show {
+  display: block;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu[data-bs-popper] {
+  top: 100%;
+  left: 0;
+  margin-top: 0.125rem;
+}
+
+.bootstrap-dropdown-widget .dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  transition: all 0.15s ease-in-out;
+}
+
+.bootstrap-dropdown-widget .dropdown-item:hover,
+.bootstrap-dropdown-widget .dropdown-item:focus {
+  color: #1e2125;
+  background-color: #e9ecef;
+  text-decoration: none;
+}
+
+.bootstrap-dropdown-widget .dropdown-item.active,
+.bootstrap-dropdown-widget .dropdown-item:active {
+  color: #fff;
+  text-decoration: none;
+  background-color: #0d6efd;
+}
+
+.bootstrap-dropdown-widget .dropdown-item.disabled,
+.bootstrap-dropdown-widget .dropdown-item:disabled {
+  color: #adb5bd;
+  pointer-events: none;
+  background-color: transparent;
+}
+
+.bootstrap-dropdown-widget .dropdown-divider {
+  height: 0;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.bootstrap-dropdown-widget .dropdown-header {
+  display: block;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+/* Dropdown directions */
+.bootstrap-dropdown-widget .dropup .dropdown-menu[data-bs-popper] {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 0.125rem;
+}
+
+.bootstrap-dropdown-widget .dropend .dropdown-menu[data-bs-popper] {
+  top: 0;
+  right: auto;
+  left: 100%;
+  margin-top: 0;
+  margin-left: 0.125rem;
+}
+
+.bootstrap-dropdown-widget .dropstart .dropdown-menu[data-bs-popper] {
+  top: 0;
+  right: 100%;
+  left: auto;
+  margin-top: 0;
+  margin-right: 0.125rem;
+}
+
+/* Dropdown sizes */
+.bootstrap-dropdown-widget .dropdown-menu-sm {
+  min-width: 8rem;
+  padding: 0.25rem 0;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-lg {
+  min-width: 12rem;
+  padding: 0.75rem 0;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-xl {
+  min-width: 16rem;
+  padding: 1rem 0;
+}
+
+/* Dropdown colors */
+.bootstrap-dropdown-widget .dropdown-menu-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-primary .dropdown-item {
+  color: #fff;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-primary .dropdown-item:hover,
+.bootstrap-dropdown-widget .dropdown-menu-primary .dropdown-item:focus {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-primary .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-dark {
+  background-color: #212529;
+  border-color: #212529;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-dark .dropdown-item {
+  color: #fff;
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-dark .dropdown-item:hover,
+.bootstrap-dropdown-widget .dropdown-menu-dark .dropdown-item:focus {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bootstrap-dropdown-widget .dropdown-menu-dark .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Button styles */
+.bootstrap-dropdown-widget .btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.bootstrap-dropdown-widget .btn-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.bootstrap-dropdown-widget .btn-secondary:hover {
+  color: #fff;
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+.bootstrap-dropdown-widget .btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.bootstrap-dropdown-widget .btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.bootstrap-dropdown-widget .btn-success {
+  color: #fff;
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.bootstrap-dropdown-widget .btn-success:hover {
+  color: #fff;
+  background-color: #157347;
+  border-color: #146c43;
+}
+
+.bootstrap-dropdown-widget .btn-danger {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.bootstrap-dropdown-widget .btn-danger:hover {
+  color: #fff;
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+
+/* Dropdown animations */
+.bootstrap-dropdown-widget .dropdown-menu {
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dropdown with icons */
+.bootstrap-dropdown-widget .dropdown-item .icon {
+  margin-right: 0.5rem;
+  width: 1em;
+  text-align: center;
+}
