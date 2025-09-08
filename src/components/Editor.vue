@@ -361,6 +361,11 @@
               display: leftActiveTab === 'templates' ? 'block' : 'none',
             }"
           >
+            <!-- Seção de Upload de Documentos -->
+            <div class="mb-6">
+              <DocUploader @templateCreated="handleTemplateCreated" />
+            </div>
+
             <div
               v-if="
                 !templatesReady || !getTemplatesByCategory('Templates').length
@@ -664,6 +669,7 @@ import {
   optimizeGrapesJSPerformance,
   setupEventThrottling,
 } from "../editor/utils/performanceUtils";
+import DocUploader from "./DocUploader.vue";
 
 // Gerenciador de Event Listeners otimizado
 class EventListenerManager {
@@ -1044,6 +1050,110 @@ const savePage = async () => {
   } finally {
     isSaving.value = false;
   }
+};
+
+const handleTemplateCreated = (template: any) => {
+  if (!editor.value) {
+    console.error("Editor GrapesJS não está disponível.");
+    return;
+  }
+  // Adiciona o CSS do template ao documento, se existir.
+  if (template.css) {
+    const styleElement = document.createElement("style");
+    styleElement.textContent = template.css;
+    document.head.appendChild(styleElement);
+  }
+
+  // Adiciona o template diretamente ao canvas se solicitado.
+  if (template.addToCanvas) {
+    try {
+      // Usar setTimeout para evitar travamento
+      setTimeout(() => {
+        if (!editor.value) return;
+        try {
+          // Adicionar o template como um bloco temporário
+          const tempBlockId = `temp-${Date.now()}`;
+          const tempBlock = editor.value.BlockManager.add(tempBlockId, {
+            id: tempBlockId,
+            label: template.label,
+            content: template.content,
+            category: { id: "Templates", label: "Templates" },
+            media:
+              template.media ||
+              '<div style="width: 48px; height: 48px; background: #3498db; border-radius: 4px;"></div>',
+          }) as any;
+
+          // Simular clique no bloco para adicionar ao canvas
+          setTimeout(() => {
+            try {
+              // Procurar o elemento do bloco no DOM
+              const blockElement = document.querySelector(
+                `[data-block-id="${tempBlockId}"]`
+              );
+              if (blockElement) {
+                console.log(
+                  "✅ Bloco temporário encontrado no DOM, simulando clique..."
+                );
+                (blockElement as HTMLElement).click();
+
+                // Remover o bloco temporário após um delay
+                setTimeout(() => {
+                  try {
+                    tempBlock.destroy();
+                    console.log("✅ Bloco temporário removido com sucesso");
+                  } catch (error) {
+                    console.error("Erro ao remover bloco temporário:", error);
+                  }
+                }, 1000);
+              } else {
+                console.error("❌ Bloco temporário não encontrado no DOM");
+                // Tentar outras estratégias para encontrar o bloco
+                const blockByClass = document.querySelector(
+                  `.gjs-block[title="${template.label}"]`
+                );
+                if (blockByClass) {
+                  console.log(
+                    "✅ Bloco encontrado por título, simulando clique..."
+                  );
+                  (blockByClass as HTMLElement).click();
+                  setTimeout(() => tempBlock.destroy(), 1000);
+                } else {
+                  console.error(
+                    "❌ Bloco não encontrado por nenhuma estratégia"
+                  );
+                  tempBlock.destroy();
+                }
+              }
+            } catch (error) {
+              console.error("Erro ao simular clique no bloco:", error);
+              tempBlock.destroy();
+            }
+          }, 200);
+        } catch (error) {
+          console.error("Erro ao adicionar template ao canvas:", error);
+          showNotification(
+            `Template "${template.label}" criado, mas não foi possível adicionar ao canvas.`,
+            "error"
+          );
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Erro ao adicionar template ao canvas:", error);
+      showNotification(
+        `Template "${template.label}" criado, mas não foi possível adicionar ao canvas.`,
+        "error"
+      );
+    }
+  } else {
+    // Notifica que o template foi apenas criado, mas não adicionado ao canvas.
+    showNotification(
+      `Template "${template.label}" criado e salvo na aba Templates!`,
+      "success"
+    );
+  }
+
+  // Força a atualização da lista de templates.
+  templatesReady.value = true;
 };
 
 const exportHTML = () => {
